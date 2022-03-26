@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     if case == 1:
 
-        L = 10
+        L = 4
         h = [[0, 0, 0]]
         J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         J_nnn = np.zeros((3, 3))
@@ -143,20 +143,20 @@ if __name__ == "__main__":
 
         for i in range(4):
 
-            sclass[i].run(10)
+            sclass[i].run(1000)
             print(sclass[i].time[0])
             sclass[i].save_random_samples(foldername, filename=filenames[i])
             data.append(sclass[i].load_random_samples(foldername, filename=filenames[i]))
 
         fig, axs = plt.subplots(2, 2)
 
-        axs[0,0].scatter(data[0]["dist"], data[0]["diffSij"], alpha=0.2, s=2)
-        axs[0,1].scatter(data[1]["dist"], data[1]["diffSij"], alpha=0.2, s=2)
-        axs[1,0].scatter(data[2]["dist"], data[2]["diffSij"], alpha=0.2, s=2)
-        axs[1,1].scatter(data[3]["dist"], data[3]["diffSij"], alpha=0.2, s=2)
+        axs[0,0].scatter(data[0]["dist"], data[0]["diffSq"], alpha=0.2, s=2)
+        axs[0,1].scatter(data[1]["dist"], data[1]["diffSq"], alpha=0.2, s=2)
+        axs[1,0].scatter(data[2]["dist"], data[2]["diffSq"], alpha=0.2, s=2)
+        axs[1,1].scatter(data[3]["dist"], data[3]["diffSq"], alpha=0.2, s=2)
 
         
-        Sij_test = [sclass[0].Sij_in["Sxx"][0, i] for i in range(L)]
+        Sij_test = [sclass[0].Sq_in["Sxx"][i] for i in range(L)]
 
         plt.figure(2)
         plt.plot(Sij_test, 'o')

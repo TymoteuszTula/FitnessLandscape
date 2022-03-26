@@ -83,10 +83,10 @@ class StabilityAnalysisSparse:
                 "rand_delta": self.randomizer.rand_delta, "runtime": self.time}
         if not self.randomizer.rand_ham:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
-                            "en": self.en}
+                            "diffSq": self.diffSq, "en": self.en}
         else:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
-                            "en": self.en, "ham_dist": self.ham_dist}
+                            "diffSq": self.diffSq, "en": self.en, "ham_dist": self.ham_dist}
 
         # Create right folders
         if not os.path.exists(foldername):

@@ -90,7 +90,7 @@ class RandomizerHamiltonianNN(Randomizer):
         H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
-        return {"Sij": S_total, "dist": dist, "energy": energy, "dist_ham": dist_ham}
+        return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy, "dist_ham": dist_ham}
 
 class RandomizerHamiltonianRandom(Randomizer):
 
@@ -159,7 +159,7 @@ class RandomizerHamiltonianRandom(Randomizer):
         H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
-        return {"Sij": S_total, "dist": dist, "energy": energy, "dist_ham": dist_ham}
+        return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy, "dist_ham": dist_ham}
 
 class RandomizerState(Randomizer):
 
@@ -215,7 +215,7 @@ class RandomizerState(Randomizer):
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_rand).trace()
 
-        return {"Sij": S_total, "dist": dist, "energy": energy}
+        return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy}
 
 class RandomizerStateRandomDelta(Randomizer):
 
@@ -270,4 +270,4 @@ class RandomizerStateRandomDelta(Randomizer):
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_rand).trace()
 
-        return {"Sij": S_total, "dist": dist, "energy": energy}
+        return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy}

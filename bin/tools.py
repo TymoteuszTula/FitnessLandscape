@@ -102,6 +102,8 @@ class SijCalculator:
             "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
             "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
 
+            Sq = {}
+
             for i in range(L):
                 for j in range(L):
                     dm_trace = dm.tocsr().trace()
