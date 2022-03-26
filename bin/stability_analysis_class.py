@@ -41,6 +41,7 @@ class StabilityAnalysisSparse:
 
         self.dist = []
         self.diffSij = []
+        self.diffSq = []
         self.en = []
         if self.randomizer.rand_ham:
             self.ham_dist = []
@@ -55,16 +56,18 @@ class StabilityAnalysisSparse:
         """
 
         if self.randomizer.rand_ham:
-            dist, en, diffSij, ham_dist = self.generate_random_Sij_sparse(no_of_samples)
+            dist, en, diffSij, diffSq, ham_dist = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
+            self.diffSq += diffSq
             self.ham_dist += ham_dist
         else:
-            dist, en, diffSij = self.generate_random_Sij_sparse(no_of_samples)
+            dist, en, diffSij, diffSq = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
+            self.diffSq += diffSq
 
     def save_random_samples(self, foldername, filename=None):
         r"""Save lists containing data: dist, diffSij, en, ham_dist to hard drive. Foldername should 
@@ -131,18 +134,24 @@ class StabilityAnalysisSparse:
         if self.ham.temp == 0:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
-            Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ, 
+                                                       self.ham.temp)
         else:
             en_in, _ = SijCalculator.find_gs_sparse(H_in)
             state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
-            Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ,
+                                                       self.ham.temp)
 
         self.Sij_in = Sij_in
+        self.Sq_in = Sq_in
 
         start_time = time.time()
         with Pool(processes=self.randomizer.no_of_processes) as pool:
             params = [{"H_in": H_in, "SX": SX, "SY": SY, "SZ": SZ, "en_in": en_in, 
-                      "state_in": state_in, "Sij_init": Sij_in, "corr": self.corr}]
+                      "state_in": state_in, "Sij_init": Sij_in, "Sq_init": Sq_in, 
+                      "corr": self.corr}]
             iter = no_of_samples * params
             data = pool.map(self.randomizer.return_random_state, iter)
         stop_time = time.time()
@@ -153,13 +162,15 @@ class StabilityAnalysisSparse:
             en = [data[i]["energy"] for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
+            diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
             dist_ham = [data[i]["dist_ham"] for i in range(no_of_samples)]
-            return dist, en, diffSij, dist_ham
+            return dist, en, diffSij, diffSq, dist_ham
         else:
             en = [data[i]["energy"] for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
-            return dist, en, diffSij
+            diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
+            return dist, en, diffSij, diffSq
 
 
 

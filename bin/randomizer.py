@@ -42,6 +42,7 @@ class RandomizerHamiltonianNN(Randomizer):
         bc = self.ham.bc
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
+        Sq_init = params["Sq_init"]
         state_in = params["state_in"]
         SX = params["SX"]
         SY = params["SY"]
@@ -63,10 +64,12 @@ class RandomizerHamiltonianNN(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
             dist = 1 - dist
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
@@ -74,10 +77,12 @@ class RandomizerHamiltonianNN(Randomizer):
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
@@ -110,6 +115,7 @@ class RandomizerHamiltonianRandom(Randomizer):
         bc = self.ham.bc
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
+        Sq_init = params["Sq_init"]
         state_in = params["state_in"]
         SX = params["SX"]
         SY = params["SY"]
@@ -127,10 +133,12 @@ class RandomizerHamiltonianRandom(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
             dist = 1 - dist
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
@@ -138,10 +146,12 @@ class RandomizerHamiltonianRandom(Randomizer):
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
@@ -166,6 +176,7 @@ class RandomizerState(Randomizer):
         L = self.ham.L
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
+        Sq_init = params["Sq_init"]
         state_in = params["state_in"]
         SX = params["SX"]
         SY = params["SY"]
@@ -179,10 +190,12 @@ class RandomizerState(Randomizer):
         if temp == 0:
             state_rand = state_in + delta * (np.random.rand(state_no) + 1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
             state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
             dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
             dist = 1 - dist
@@ -193,10 +206,12 @@ class RandomizerState(Randomizer):
             ranp = ranp.conj().T @ ranp
             state_rand = state_in + ranp
             state_rand = state_rand / np.trace(state_rand)
-            Sij_rand = SijCalculator.return_Sij_dm_not_sparse(L, state_rand, SX, SY, SZ)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq_dm_not_sparse(L, state_rand, SX, SY, SZ)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_rand).trace()
 
@@ -216,6 +231,7 @@ class RandomizerStateRandomDelta(Randomizer):
         L = self.ham.L
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
+        Sq_init = params["Sq_init"]
         state_in = params["state_in"]
         SX = params["SX"]
         SY = params["SY"]
@@ -229,10 +245,12 @@ class RandomizerStateRandomDelta(Randomizer):
         if temp == 0:
             state_rand = state_in + delta * (np.random.rand(state_no) + 1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
             state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
-            Sij_rand = SijCalculator.return_Sij(L, state_rand, SX, SY, SZ, temp)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq(L, state_rand, SX, SY, SZ, temp)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
             dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
             dist = 1 - dist
@@ -243,20 +261,13 @@ class RandomizerStateRandomDelta(Randomizer):
             ranp = ranp.conj().T @ ranp
             state_rand = state_in + ranp
             state_rand = state_rand / np.trace(state_rand)
-            Sij_rand = SijCalculator.return_Sij_dm_not_sparse(L, state_rand, SX, SY, SZ)
+            Sij_rand, Sq_rand = SijCalculator.return_SijSq_dm_not_sparse(L, state_rand, SX, SY, SZ)
             S_total = 0
+            Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_rand).trace()
 
         return {"Sij": S_total, "dist": dist, "energy": energy}
-
-    class RandomizerStateRandomDelta(Randomizer):
-
-        def __init__(self, ham, delta_max, no_of_processes):
-            self.ham = ham
-            self.delta = delta_max
-            self.no_of_processes = no_of_processes
-            self.rand_ham = False
-            self.rand_delta = True
