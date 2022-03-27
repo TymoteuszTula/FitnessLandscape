@@ -64,7 +64,7 @@ elif rand_type == "state":
     rand = RandomizerState(ham, delta[0], no_of_processes)
 
 stabsparse = StabilityAnalysisSparse(ham, rand, corr)
-foldername = './run/output/feynman/'
+foldername = './run/output/icarus/'
 
 stabsparse.run(no_of_samples)
 stabsparse.save_random_samples(foldername, output_filename + no + '.pickle')
