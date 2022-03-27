@@ -43,7 +43,7 @@ for i in no_file:
     filename_input = 'input' + str(i) + '.txt'
     with open(foldername_input + filename_input, "r") as fh:
         first_line = fh.readline()
-        if first_line != "#Feynman2":
+        if first_line[:-1] != "#Feynman2":
             raise ValueError
         for next_line in fh:
             par = next_line.split("=")
