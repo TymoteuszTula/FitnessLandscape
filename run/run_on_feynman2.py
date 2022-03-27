@@ -4,7 +4,8 @@ import numpy as np
 import sys
 sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
-from randomizers import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
+from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
+from stability_analysis_class import StabilityAnalysisSparse
 import argparse
 
 parser = argparse.ArgumentParser()
