@@ -58,7 +58,7 @@ for i in no_file:
     J_max = float(par_values["J_max"])
     no_of_processes = int(par_values["no_of_processes"])
     no_of_samples = int(par_values["no_of_samples"])
-    output_filename = str(par_values["output_filename"])
+    output_filename = str(par_values["output_prefix"])
     delta = str(par_values["delta"]).split("-")
     delta = [float(delta[i]) for i in range(len(delta))]
 
