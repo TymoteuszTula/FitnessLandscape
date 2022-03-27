@@ -1,6 +1,7 @@
 # generate_input.py
 
 import os
+import numpy as np
 
 def add_additional_combinations_dict(A, B, B_key):
     # Assume A is list of dicts (with the same keys) and B is a list of new
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--delta", type=str, nargs='+')
     parser.add_argument("--no_of_processes", type=int, nargs='+')
     parser.add_argument("--no_of_samples", type=int, nargs='+')
+    parser.add_argument("--start_from", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -46,8 +48,10 @@ if __name__ == "__main__":
     else:
         raise ValueError
 
+    permute = np.random.permutation(np.arange(len(comb)))
+
     for i, comb_i in enumerate(comb):  
-        fh = open(path + 'input' + str(i) + '.txt', 'w')
+        fh = open(path + 'input' + str(permute[i] + args.start_from) + '.txt', 'w')
         fh.write('#' + args.machine + '\n')
         fh.write('\n')
         fh.write("output_prefix= " + args.output_prefix)

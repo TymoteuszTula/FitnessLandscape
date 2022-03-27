@@ -1,0 +1,13 @@
+#Feynman2
+
+output_prefix= output
+L= 2
+ham_type= NNAf
+rand_type= ham
+temp= 0.0
+h_max= 1
+J_max= 1
+delta= 0-1-0-0
+no_of_processes= 4
+no_of_samples= 7200
+END
