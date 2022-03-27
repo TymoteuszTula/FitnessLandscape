@@ -2,7 +2,6 @@
 
 import numpy as np
 import sys
-from bin.stability_analysis_class import StabilityAnalysisSparse
 sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
 from randomizers import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
