@@ -45,6 +45,8 @@ if __name__ == "__main__":
         path = './run/input/feynman2/'
     elif args.machine == "Icarus":
         path = './run/input/icarus/'
+    elif args.machine == "Test":
+        path = './run/input/test/'
     else:
         raise ValueError
 

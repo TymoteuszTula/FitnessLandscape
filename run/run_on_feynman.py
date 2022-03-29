@@ -5,6 +5,7 @@ import sys
 sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
 from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
+from randomizer import RandomizerHamiltonianNNRandomDelta, RandomizerStateRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
 import argparse
 
@@ -71,13 +72,29 @@ for i in no_file:
     else:
         raise ValueError("Inproper ham_type name")
 
-    if rand_type == "ham":
-        if ham_type == "NNAf":
-            rand = RandomizerHamiltonianNN(ham, delta, no_of_processes)
-        elif ham_type == "Rand":
-            rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
+    # if rand_type == "ham":
+    #     if ham_type == "NNAf":
+    #         rand = RandomizerHamiltonianNN(ham, delta, no_of_processes)
+    #     elif ham_type == "Rand":
+    #         rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
+    #     elif ham_type == "RandNN":
+    #         rand = RandomizerHamiltonianNNRandomDelta(ham, delta, no_of_processes)
+    # elif rand_type == "state":
+    #     if 
+    #     rand = RandomizerState(ham, delta[0], no_of_processes)
+
+    if rand_type == "hamNN":
+        rand = RandomizerHamiltonianNN(ham, delta, no_of_processes)
+    elif rand_type == "ham_rand":
+        rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
+    elif rand_type == "ham_randNN":
+        rand = RandomizerHamiltonianNNRandomDelta(ham, delta, no_of_processes)
     elif rand_type == "state":
-        rand = RandomizerState(ham, delta[0], no_of_processes)
+        rand = RandomizerState(ham, delta, no_of_processes)
+    elif rand_type == "state_rand":
+        rand = RandomizerStateRandomDelta(ham, delta, no_of_processes)
+    else:
+        raise ValueError("Inproper rand_type name")
 
     stabsparse = StabilityAnalysisSparse(ham, rand, corr)
     foldername = './run/output/feynman/'
