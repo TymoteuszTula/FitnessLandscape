@@ -1,9 +1,11 @@
 # run_on_icarus.py
 
 import sys
+import os
 sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
 from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
+from randomizer import RandomizerHamiltonianNNRandomDelta, RandomizerStateRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
 import argparse
 import numpy as np
@@ -13,11 +15,12 @@ par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
               "output_prefix": "output"}
 parser.add_argument('no', type=str)
+parser.add_argument('--input_folder', type=str)
 args = parser.parse_args()
 
 no = args.no
 
-foldername_input = "./run/input/icarus/"
+foldername_input = "./run/input/icarus/" + args.input_folder
 
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
@@ -70,6 +73,14 @@ else:
 
 stabsparse = StabilityAnalysisSparse(ham, rand, corr)
 foldername = './run/output/icarus/'
+output_split = output_filename.split("/")
+if len(output_split) != 1:
+    path = foldername
+    for j in range(len(output_split) - 1):
+        path += output_split[j]
+
+if not os.path.exists(path):
+    os.makedirs(path)
 
 stabsparse.run(no_of_samples)
 stabsparse.save_random_samples(foldername, output_filename + no + '.pickle')
