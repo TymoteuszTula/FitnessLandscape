@@ -2,15 +2,18 @@
 
 import numpy as np
 import sys
+import os
 sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
 from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
+from randomizer import RandomizerHamiltonianNNRandomDelta, RandomizerStateRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--no', type=int, nargs='+')
 parser.add_argument('--range', type=str)
+parser.add_argument('--input_folder', type=str)
 
 args = parser.parse_args()
 
@@ -31,7 +34,7 @@ par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
               "output_prefix": "output"}
 
-foldername_input = './run/input/feynman2/'
+foldername_input = './run/input/feynman2/' + args.input_folder
 
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
@@ -71,16 +74,29 @@ for i in no_file:
     else:
         raise ValueError("Inproper ham_type name")
 
-    if rand_type == "ham":
-        if ham_type == "NNAf":
-            rand = RandomizerHamiltonianNN(ham, delta, no_of_processes)
-        elif ham_type == "Rand":
-            rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
+    if rand_type == "hamNN":
+        rand = RandomizerHamiltonianNN(ham, delta, no_of_processes)
+    elif rand_type == "ham_rand":
+        rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
+    elif rand_type == "ham_randNN":
+        rand = RandomizerHamiltonianNNRandomDelta(ham, delta, no_of_processes)
     elif rand_type == "state":
-        rand = RandomizerState(ham, delta[0], no_of_processes)
+        rand = RandomizerState(ham, delta, no_of_processes)
+    elif rand_type == "state_rand":
+        rand = RandomizerStateRandomDelta(ham, delta, no_of_processes)
+    else:
+        raise ValueError("Inproper rand_type name")
 
     stabsparse = StabilityAnalysisSparse(ham, rand, corr)
     foldername = './run/output/feynman2/'
+    output_split = output_filename.split("/")
+    if len(output_split) != 1:
+        path = foldername
+        for j in range(len(output_split) - 1):
+            path += output_split[j]
+    
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     stabsparse.run(no_of_samples)
     stabsparse.save_random_samples(foldername, output_filename + str(i) + '.pickle')

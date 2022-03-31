@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--machine", type=str)
     parser.add_argument("--output_prefix", type=str, default="output")
+    parser.add_argument("--input_prefix", type=str, default="")
     parser.add_argument("--ham_type", type=str, nargs='+')
     parser.add_argument("--rand_type", type=str, nargs='+')
     parser.add_argument("--L", type=int, nargs='+')
@@ -45,10 +46,17 @@ if __name__ == "__main__":
         path = './run/input/feynman2/'
     elif args.machine == "Icarus":
         path = './run/input/icarus/'
+    elif args.machine == "Test":
+        path = './run/input/test/'
     else:
         raise ValueError
 
     permute = np.random.permutation(np.arange(len(comb)))
+
+    path += args.input_prefix
+
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     for i, comb_i in enumerate(comb):  
         fh = open(path + 'input' + str(permute[i] + args.start_from) + '.txt', 'w')

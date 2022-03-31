@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     if case == 1:
 
-        L = 4
+        L = 6
         h = [[0, 0, 0]]
         J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
         J_nnn = np.zeros((3, 3))
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
         for i in range(4):
 
-            sclass[i].run(1000)
+            sclass[i].run(500)
             print(sclass[i].time[0])
             sclass[i].save_random_samples(foldername, filename=filenames[i])
             data.append(sclass[i].load_random_samples(foldername, filename=filenames[i]))
