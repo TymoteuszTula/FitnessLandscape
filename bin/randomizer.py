@@ -303,7 +303,7 @@ class RandomizerStateRandomDelta(Randomizer):
         self.rand_delta = True
 
     def return_random_state(self, params):
-        delta = self.delta * np.random.rand(1)[0]
+        delta = self.delta * np.random.rand(1)
         L = self.ham.L
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
