@@ -34,7 +34,7 @@ class StabilityAnalysisSparse:
     
     """
 
-    def __init__(self, ham, randomizer, corr):
+    def __init__(self, ham, randomizer, corr, save_rand_ham=False):
         self.ham = ham
         self.randomizer = randomizer
         self.corr = corr
@@ -45,6 +45,9 @@ class StabilityAnalysisSparse:
         self.en = []
         if self.randomizer.rand_ham:
             self.ham_dist = []
+            if save_rand_ham:
+                self.rhams = []
+        self.save_rand_ham = save_rand_ham
         self.time = []
 
     def run(self, no_of_samples):
@@ -56,18 +59,25 @@ class StabilityAnalysisSparse:
         """
 
         if self.randomizer.rand_ham:
-            dist, en, diffSij, diffSq, ham_dist = self.generate_random_Sij_sparse(no_of_samples)
+            if self.save_rand_ham:
+                dist, en, diffSij, diffSq, ham_dist, hams = self.generate_random_Sij_sparse_with_hams(no_of_samples)
+                self.rhams += hams
+            else:
+                dist, en, diffSij, diffSq, ham_dist = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
             self.ham_dist += ham_dist
+            
         else:
             dist, en, diffSij, diffSq = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
+
+        
 
     def save_random_samples(self, foldername, filename=None):
         r"""Save lists containing data: dist, diffSij, en, ham_dist to hard drive. Foldername should 
@@ -87,6 +97,8 @@ class StabilityAnalysisSparse:
         else:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
                             "diffSq": self.diffSq, "en": self.en, "ham_dist": self.ham_dist}
+            if self.save_rand_ham:
+                data_to_save["rhams"] = self.rhams
 
         # Create right folders
         if not os.path.exists(foldername):
@@ -172,7 +184,57 @@ class StabilityAnalysisSparse:
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
             return dist, en, diffSij, diffSq
 
+    
+    def generate_random_Sij_sparse_with_hams(self, no_of_samples):
+        r"""Generate data for a given no of samples
+        
+        Parameters
+        ----------
 
+        """
+        
+        states = self.ham.states
+        #H_in = calculate_ham_sparse(L, states, h, J_onsite, J_nn, J_nnn, bc)
+        #H_in = create_hamiltonian_sparse(L, params_input={"L": self.L, "J": self.J, "h": self.h})
+        H_in = self.ham.get_init_ham()
+        SX = create_sx_sparse(states, self.ham.L)
+        SY = create_sy_sparse(states, self.ham.L)
+        SZ = create_sz_sparse(states, self.ham.L)
+        if self.ham.temp == 0:
+            en_in, gs = SijCalculator.find_gs_sparse(H_in)
+            state_in = gs[:,0]
+            #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ, 
+                                                       self.ham.temp)
+        else:
+            en_in, _ = SijCalculator.find_gs_sparse(H_in)
+            state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
+            #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ,
+                                                       self.ham.temp)
+
+        self.Sij_in = Sij_in
+        self.Sq_in = Sq_in
+
+        start_time = time.time()
+        with Pool(processes=self.randomizer.no_of_processes) as pool:
+            params = [{"H_in": H_in, "SX": SX, "SY": SY, "SZ": SZ, "en_in": en_in, 
+                      "state_in": state_in, "Sij_init": Sij_in, "Sq_init": Sq_in, 
+                      "corr": self.corr, "return_ham": True}]
+            iter = no_of_samples * params
+            data = pool.map(self.randomizer.return_random_state, iter)
+        stop_time = time.time()
+
+        self.time.append(stop_time-start_time)
+
+        en = [data[i]["energy"] for i in range(no_of_samples)]
+        dist = [data[i]["dist"] for i in range(no_of_samples)]
+        diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
+        diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
+        dist_ham = [data[i]["dist_ham"] for i in range(no_of_samples)]
+        rham = [data[i]["rham"] for i in range(no_of_samples)]
+        return dist, en, diffSij, diffSq, dist_ham, rham
+    
 
         # if self.randomizer.rand_ham:
         #     if not isinstance(self.delta, list):

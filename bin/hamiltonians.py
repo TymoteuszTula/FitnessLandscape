@@ -103,11 +103,11 @@ class RandomHamiltonianTI(Hamiltonian):
         self.L = L
         self.states = create_states(L)
         if h == None:
-            self.h = [h_max * np.random.rand(3)]
+            self.h = [h_max * np.random.randn(3)]
         else:
             self.h = h
         if J == None:
-            J_init = J_max * np.random.rand(3, 3)
+            J_init = J_max * np.random.randn(3, 3)
             J_init = 1 / 2 * J_init.conj().T @ J_init
             self.J = [[J_init]]
         else:

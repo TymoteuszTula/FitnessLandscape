@@ -114,11 +114,11 @@ if __name__ == "__main__":
 
     if case == 1:
 
-        L = 6
+        L = 8
         h = [[0, 0, 0]]
-        J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-        J_nnn = np.zeros((3, 3))
-        J_onsite = np.zeros((3, 3))
+        J_nn = np.random.rand(3, 3)
+        J_nnn = np.random.rand(3, 3)
+        J_onsite = np.random.rand(3, 3)
         delta_1 = [0, 0.01, 0, 0]
         delta_2 = 1
         no_of_processes = 4
@@ -161,6 +161,13 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.plot(Sij_test, 'o')
         plt.show()
+
+    if case == 2:
+
+        L = 6
+
+
+
 
 
 

@@ -1,0 +1,14 @@
+#Feynman2
+
+output_prefix= run03042022/output
+L= 6
+ham_type= Rand
+rand_type= state_rand
+temp= 0.9
+h_max= 0.0
+J_max= 1.0
+delta= 0.1
+no_of_processes= 4
+no_of_samples= 5000
+save_rhams= False
+END

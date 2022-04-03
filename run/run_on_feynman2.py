@@ -7,6 +7,7 @@ sys.path.append("./bin/")
 from hamiltonians import NNHamiltonian, RandomHamiltonianTI
 from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamiltonianRandom
 from randomizer import RandomizerHamiltonianNNRandomDelta, RandomizerStateRandomDelta
+from randomizer import RandomizerHamiltonianRandomRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
 import argparse
 
@@ -32,7 +33,7 @@ else:
 
 par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_max": "1",
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
-              "output_prefix": "output"}
+              "output_prefix": "output", "save_rhams": "False"}
 
 foldername_input = './run/input/feynman2/' + args.input_folder
 
@@ -65,6 +66,11 @@ for i in no_file:
     delta = str(par_values["delta"]).split("-")
     delta = [float(delta[i]) for i in range(len(delta))]
 
+    if par_values["save_rhams"] == "True":
+        save_rhams = True
+    else:
+        save_rhams = False
+
     # Run simulation
 
     if ham_type == "NNAf":
@@ -80,6 +86,8 @@ for i in no_file:
         rand = RandomizerHamiltonianRandom(ham, delta, no_of_processes)
     elif rand_type == "ham_randNN":
         rand = RandomizerHamiltonianNNRandomDelta(ham, delta, no_of_processes)
+    elif rand_type == "ham_rand_randDelta":
+        rand = RandomizerHamiltonianRandomRandomDelta(ham, delta, no_of_processes)
     elif rand_type == "state":
         rand = RandomizerState(ham, delta, no_of_processes)
     elif rand_type == "state_rand":
