@@ -17,6 +17,13 @@ class Randomizer:
     def return_random_state(self):
         pass
 
+    def calculate_dist_overlap(self, state_in, state_rand):
+        dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
+        dist = 1 - dist
+        # overlap = (state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)[0,0]
+        # dist = 2 * (1 - np.real(overlap))
+        return dist
+
 class RandomizerHamiltonianNN(Randomizer):
 
     def __init__(self, ham, delta, no_of_processes):
@@ -31,7 +38,7 @@ class RandomizerHamiltonianNN(Randomizer):
         self.rand_delta = False
 
     def return_random_state(self, params):
-
+        super().return_random_state()
         delta = self.delta
         L = self.ham.L
         states = self.ham.states
@@ -74,8 +81,7 @@ class RandomizerHamiltonianNN(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
@@ -114,7 +120,7 @@ class RandomizerHamiltonianRandom(Randomizer):
         self.rand_delta = False
 
     def return_random_state(self, params):
-
+        super().return_random_state()
         delta = self.delta
         L = self.ham.L
         states = self.ham.states
@@ -151,8 +157,7 @@ class RandomizerHamiltonianRandom(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
@@ -191,7 +196,7 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         self.rand_delta = False
 
     def return_random_state(self, params):
-
+        super().return_random_state()
         delta = [self.delta[0] * np.random.rand(1)[0], self.delta[1] * np.random.rand(1)[0]]
         L = self.ham.L
         states = self.ham.states
@@ -228,8 +233,7 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
@@ -268,6 +272,7 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         self.rand_delta = True
 
     def return_random_state(self, params):
+        super().return_random_state()
         delta = [self.delta[0] * np.random.rand(1)[0], self.delta[1] * np.random.rand(1)[0],
                  self.delta[2] * np.random.rand(1)[0], self.delta[3] * np.random.rand(1)[0]]
         L = self.ham.L
@@ -311,8 +316,7 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
@@ -349,6 +353,7 @@ class RandomizerState(Randomizer):
 
 
     def return_random_state(self, params):
+        super().return_random_state()
         delta = self.delta
         L = self.ham.L
         temp = self.ham.temp
@@ -374,8 +379,7 @@ class RandomizerState(Randomizer):
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
         else:
             # Here state_in must be dense
@@ -389,7 +393,7 @@ class RandomizerState(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
+            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
             energy = (H_in @ state_rand).trace()
 
         return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy}
@@ -404,6 +408,7 @@ class RandomizerStateRandomDelta(Randomizer):
         self.rand_delta = True
 
     def return_random_state(self, params):
+        super().return_random_state()
         delta = self.delta * np.random.rand(1)
         L = self.ham.L
         temp = self.ham.temp
@@ -429,8 +434,7 @@ class RandomizerStateRandomDelta(Randomizer):
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
-            dist = (np.abs(state_rand[np.newaxis].conj() @ state_in[np.newaxis].T)**2)[0,0]
-            dist = 1 - dist
+            dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
         else:
             # Here state_in must be dense
@@ -444,7 +448,7 @@ class RandomizerStateRandomDelta(Randomizer):
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
+            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
             energy = (H_in @ state_rand).trace()
 
         return {"Sij": S_total, "Sq": Sq_total, "dist": dist, "energy": energy}
