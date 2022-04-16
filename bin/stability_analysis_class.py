@@ -34,7 +34,7 @@ class StabilityAnalysisSparse:
     
     """
 
-    def __init__(self, ham, randomizer, corr, save_rand_ham=False):
+    def __init__(self, ham, randomizer, corr, save_rand_ham=False, temp_mul=None, temp_type="value"):
         self.ham = ham
         self.randomizer = randomizer
         self.corr = corr
@@ -49,6 +49,8 @@ class StabilityAnalysisSparse:
                 self.rhams = []
         self.save_rand_ham = save_rand_ham
         self.time = []
+        self.temp_mul = temp_mul
+        self.temp_type = temp_type
 
     def set_seed(self, seed):
         np.random.seed(seed)
@@ -93,8 +95,9 @@ class StabilityAnalysisSparse:
         """
 
         info = {"L": self.ham.L, "h": self.ham.h, "J": self.ham.J, "delta": self.randomizer.delta, 
-                "temp": self.ham.temp, "bc": self.ham.bc, "rand_ham": self.randomizer.rand_ham, 
-                "rand_delta": self.randomizer.rand_delta, "runtime": self.time}
+                "true_temp": self.ham.temp, "bc": self.ham.bc, "rand_ham": self.randomizer.rand_ham, 
+                "rand_delta": self.randomizer.rand_delta, "runtime": self.time, 
+                "temp_mul": self.temp_mul, "temp_type": self.temp_type}
         if not self.randomizer.rand_ham:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
                             "diffSq": self.diffSq, "en": self.en}
@@ -228,14 +231,16 @@ class StabilityAnalysisSparse:
         self.Sq_in = Sq_in
 
         start_time = time.time()
-        seeds = [[np.random.randint(1000)] for i in range(self.randomizer.no_of_processes)]
-        with Pool(processes=self.randomizer.no_of_processes, initializer=self.set_seed, 
-                   initargs=seeds) as pool:
+        # seeds = [[np.random.randint(1000)] for i in range(self.randomizer.no_of_processes)]
+        with Pool(processes=self.randomizer.no_of_processes) as pool:
+            seeds = np.random.randint(1000, size=self.randomizer.no_of_processes)
+            for i in range(self.randomizer.no_of_processes):
+                pool.apply_async(self.set_seed, (seeds[i],))
             params = [{"H_in": H_in, "SX": SX, "SY": SY, "SZ": SZ, "en_in": en_in, 
                       "state_in": state_in, "Sij_init": Sij_in, "Sq_init": Sq_in, 
                       "corr": self.corr, "return_ham": True}]
             iter = no_of_samples * params
-            # seeds = np.random.randint(1000, size=self.randomizer.no_of_processes)
+            # seeds = np.random.randint(1000, size=4)
             # for j in range(self.randomizer.no_of_processes):
             #     iter[j]["seed"] = seeds[j]
             data = pool.map(self.randomizer.return_random_state, iter)

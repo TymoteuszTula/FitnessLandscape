@@ -9,6 +9,7 @@ from randomizer import RandomizerState, RandomizerHamiltonianNN, RandomizerHamil
 from randomizer import RandomizerHamiltonianNNRandomDelta, RandomizerStateRandomDelta
 from randomizer import RandomizerHamiltonianRandomRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
+from tools import SijCalculator
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -37,10 +38,21 @@ par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_
 
 foldername_input = './run/input/feynman/' + args.input_folder
 
+np.random.seed(42)
+h_rand = [np.random.rand(3)]
+J_onsite_rand = np.random.rand(3, 3)
+J_onsite_rand = 1 / 2 * J_onsite_rand.conj().T @ J_onsite_rand
+J_nnn_rand = np.random.rand(3, 3)
+J_nnn_rand = 1 / 2 * J_nnn_rand.conj().T @ J_nnn_rand
+J_nn_rand = np.random.rand(3, 3)
+J_nn_rand = 1 / 2 * J_nn_rand.conj().T @ J_nn_rand
+np.random.seed()
+
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
 J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+
 corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"]
 
 for i in no_file:
@@ -65,20 +77,37 @@ for i in no_file:
     output_filename = str(par_values["output_prefix"])
     delta = str(par_values["delta"]).split("-")
     delta = [float(delta[i]) for i in range(len(delta))]
+    temp_type = str(par_values["temp_type"])
 
     if par_values["save_rhams"] == "True":
         save_rhams = True
     else:
         save_rhams = False
 
-    # Run simulation
+    # Change in chosing temperature
 
     if ham_type == "NNAf":
-        ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp=temp)
+        ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp=0)
+    elif ham_type == "NNRand":
+        ham = NNHamiltonian(L, h_rand, J_onsite_rand, J_nn_rand, J_nnn_rand, temp=0)
     elif ham_type == "Rand":
-        ham = RandomHamiltonianTI(L, temp=temp, h_max=h_max, J_max=J_max)
+        ham = RandomHamiltonianTI(L, temp=0, h_max=h_max, J_max=J_max)
     else:
         raise ValueError("Inproper ham_type name")
+
+    if temp_type == "value":
+        ham.temp = temp
+    else:
+        H_in = ham.get_init_ham()
+        eigvals = SijCalculator.find_eigvals(H_in)
+        if temp_type == "gap":
+            gap = SijCalculator.find_gap(eigvals)
+            ham.temp = temp * gap
+        elif temp_type == "bandwidth":
+            bandwidth = SijCalculator.find_bandwidth(eigvals)
+            ham.temp = temp * bandwidth
+        else:
+            raise ValueError("Inproper temperature type")
 
     # if rand_type == "ham":
     #     if ham_type == "NNAf":
@@ -106,7 +135,8 @@ for i in no_file:
     else:
         raise ValueError("Inproper rand_type name")
 
-    stabsparse = StabilityAnalysisSparse(ham, rand, corr)
+    stabsparse = StabilityAnalysisSparse(ham, rand, corr, save_rhams, 
+                                         temp_mul=temp, temp_type=temp_type)
     foldername = './run/output/feynman/'
     output_split = output_filename.split("/")
     if len(output_split) != 1:

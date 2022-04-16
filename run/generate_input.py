@@ -28,13 +28,15 @@ if __name__ == "__main__":
     parser.add_argument("--no_of_samples", type=int, nargs='+')
     parser.add_argument("--start_from", type=int, default=1)
     parser.add_argument("--save_rhams", type=bool, nargs='+', default=[False])
+    parser.add_argument("--temp_type", type=str, nargs='+', default=["value"])
 
     args = parser.parse_args()
 
     params = {"ham_type": args.ham_type, "rand_type": args.rand_type,
               "L": args.L, "temp": args.temp, "h_max": args.h_max, "J_max": args.J_max, 
               "delta": args.delta, "no_of_processes": args.no_of_processes, 
-              "no_of_samples": args.no_of_samples, "save_rhams": args.save_rhams}
+              "no_of_samples": args.no_of_samples, "save_rhams": args.save_rhams,
+              "temp_type": args.temp_type}
 
     comb = [{"L": args.L[i]} for i in range(len(args.L))]
     for key in params.keys():

@@ -7,6 +7,8 @@ from math import pi
 class SijCalculator:
     r"""Prototype of class designed to return Sij correlation functions"""
 
+    round_to = 10
+
     def __init__(self):
         pass
 
@@ -207,6 +209,27 @@ class SijCalculator:
         
     def find_gs_sparse(ham):
         return sprsla.eigsh(ham, 1)
+
+    def find_eigvals(ham):
+        return sprsla.eigsh(ham, return_eigenvectors=False)
+
+    def find_gap(eigvals):
+        round_to = SijCalculator.round_to
+        gs_energy = np.inf
+        fes_energy = np.inf
+        for ev in eigvals:
+            ev_round = round(ev, round_to)
+            if ev_round < gs_energy:
+                fes_energy = gs_energy
+                gs_energy = ev_round
+            elif ev_round < fes_energy and ev_round != gs_energy:
+                fes_energy = ev_round
+        return fes_energy - gs_energy
+                
+    def find_bandwidth(eigvals):
+        gs_energy = np.min(eigvals)
+        les_energy = np.max(eigvals)
+        return les_energy - gs_energy
 
     def return_dm_sparse(ham, beta=1):
         re = sprsla.expm(-beta * ham.tocsc())

@@ -23,6 +23,16 @@ no = args.no
 
 foldername_input = "./run/input/icarus/" + args.input_folder
 
+np.random.seed(42)
+h_rand = [np.random.rand(3)]
+J_onsite_rand = np.random.rand(3, 3)
+J_onsite_rand = 1 / 2 * J_onsite_rand.conj().T @ J_onsite_rand
+J_nnn_rand = np.random.rand(3, 3)
+J_nnn_rand = 1 / 2 * J_nnn_rand.conj().T @ J_nnn_rand
+J_nn_rand = np.random.rand(3, 3)
+J_nn_rand = 1 / 2 * J_nn_rand.conj().T @ J_nn_rand
+np.random.seed()
+
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
@@ -59,6 +69,8 @@ else:
 
 if ham_type == "NNAf":
     ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp=temp)
+elif ham_type == "NNRand":
+        ham = NNHamiltonian(L, h_rand, J_onsite_rand, J_nn_rand, J_nnn_rand, temp=temp)
 elif ham_type == "Rand":
     ham = RandomHamiltonianTI(L, temp=temp, h_max=h_max, J_max=J_max)
 else:
