@@ -34,7 +34,7 @@ else:
 
 par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_max": "1",
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
-              "output_prefix": "output", "save_rhams": "False"}
+              "output_prefix": "output", "save_rhams": "False", "temp_type": "value"}
 
 foldername_input = './run/input/feynman/' + args.input_folder
 
