@@ -1,0 +1,15 @@
+#Feynman
+
+output_prefix= feynman3/run17042022/output
+L= 3
+ham_type= NNRand
+rand_type= ham_randNN
+temp= 0.25
+h_max= 1
+J_max= 1
+delta= 1-2-1-1
+no_of_processes= 4
+no_of_samples= 2000
+save_rhams= False
+temp_type= bandwidth
+END
