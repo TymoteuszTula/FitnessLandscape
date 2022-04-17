@@ -142,7 +142,7 @@ for i in no_file:
     if len(output_split) != 1:
         path = foldername
         for j in range(len(output_split) - 1):
-            path += output_split[j]
+            path += output_split[j] + "/"
     
     if not os.path.exists(path):
         os.makedirs(path)
