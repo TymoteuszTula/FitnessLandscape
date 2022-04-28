@@ -98,7 +98,7 @@ for i in no_file:
     if temp_type == "value":
         ham.temp = temp
     else:
-        H_in = ham.get_init_ham()
+        H_in = ham.get_init_ham().todense()
         eigvals = SijCalculator.find_eigvals(H_in)
         if temp_type == "gap":
             gap = SijCalculator.find_gap(eigvals)

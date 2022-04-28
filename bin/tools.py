@@ -211,7 +211,7 @@ class SijCalculator:
         return sprsla.eigsh(ham, 1)
 
     def find_eigvals(ham):
-        return sprsla.eigsh(ham, return_eigenvectors=False)
+        return np.linalg.eigvals(ham)
 
     def find_gap(eigvals):
         round_to = SijCalculator.round_to
