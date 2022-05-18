@@ -76,7 +76,7 @@ class StabilityAnalysisSparse:
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
-            self.diffSq_int += diffSq_int
+            #self.diffSq_int += diffSq_int
             self.ham_dist += ham_dist
             self.Sqs += Sqs
             
@@ -86,7 +86,7 @@ class StabilityAnalysisSparse:
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
-            self.diffSq_int += diffSq_int
+            #self.diffSq_int += diffSq_int
             self.Sqs += Sqs
 
         
