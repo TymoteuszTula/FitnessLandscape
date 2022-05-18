@@ -51,6 +51,8 @@ class StabilityAnalysisSparse:
         self.time = []
         self.temp_mul = temp_mul
         self.temp_type = temp_type
+        self.Sqs = []
+        #self.Sq_init = []
 
     def set_seed(self, seed):
         np.random.seed(seed)
@@ -69,19 +71,23 @@ class StabilityAnalysisSparse:
                 dist, en, diffSij, diffSq, ham_dist, hams = self.generate_random_Sij_sparse_with_hams(no_of_samples)
                 self.rhams += hams
             else:
-                dist, en, diffSij, diffSq, ham_dist = self.generate_random_Sij_sparse(no_of_samples)
+                dist, en, diffSij, diffSq, ham_dist, Sqs= self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
+            self.diffSq_int += diffSq_int
             self.ham_dist += ham_dist
+            self.Sqs += Sqs
             
         else:
-            dist, en, diffSij, diffSq = self.generate_random_Sij_sparse(no_of_samples)
+            dist, en, diffSij, diffSq, Sqs = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
+            self.diffSq_int += diffSq_int
+            self.Sqs += Sqs
 
         
 
@@ -100,10 +106,10 @@ class StabilityAnalysisSparse:
                 "temp_mul": self.temp_mul, "temp_type": self.temp_type}
         if not self.randomizer.rand_ham:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
-                            "diffSq": self.diffSq, "en": self.en}
+                            "diffSq": self.diffSq, "en": self.en, "Sqs": self.Sqs, "Sq_init": self.Sq_in}
         else:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
-                            "diffSq": self.diffSq, "en": self.en, "ham_dist": self.ham_dist}
+                            "diffSq": self.diffSq, "en": self.en, "ham_dist": self.ham_dist, "Sqs": self.Sqs, "Sq_init": self.Sq_in}
             if self.save_rand_ham:
                 data_to_save["rhams"] = self.rhams
 
@@ -154,14 +160,14 @@ class StabilityAnalysisSparse:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ, 
-                                                       self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ, 
+                                                       self.ham.temp, no_ofqpoints=100)
         else:
             en_in, _ = SijCalculator.find_gs_sparse(H_in)
             state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ,
-                                                       self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ,
+                                                       self.ham.temp, no_ofqpoints=100)
 
         self.Sij_in = Sij_in
         self.Sq_in = Sq_in
@@ -190,13 +196,15 @@ class StabilityAnalysisSparse:
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
             dist_ham = [data[i]["dist_ham"] for i in range(no_of_samples)]
-            return dist, en, diffSij, diffSq, dist_ham
+            Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
+            return dist, en, diffSij, diffSq, dist_ham, Sqs
         else:
             en = [data[i]["energy"] for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
-            return dist, en, diffSij, diffSq
+            Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
+            return dist, en, diffSij, diffSq, Sqs
 
     
     def generate_random_Sij_sparse_with_hams(self, no_of_samples):
@@ -218,14 +226,14 @@ class StabilityAnalysisSparse:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ, 
-                                                       self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ, 
+                                                       self.ham.temp, no_ofqpoints=100)
         else:
             en_in, _ = SijCalculator.find_gs_sparse(H_in)
             state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_SijSq(self.ham.L, state_in, SX, SY, SZ,
-                                                       self.ham.temp)
+            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ,
+                                                       self.ham.temp, no_ofqpoints=100)
 
         self.Sij_in = Sij_in
         self.Sq_in = Sq_in

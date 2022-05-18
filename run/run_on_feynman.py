@@ -48,10 +48,10 @@ J_nn_rand = np.random.rand(3, 3)
 J_nn_rand = 1 / 2 * J_nn_rand.conj().T @ J_nn_rand
 np.random.seed()
 
-h = [[0, 0, 0]]
+h = [[0, 0, 0.90]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
-J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+J_nn = [[-0.5-0.2, 0, 0], [0, -0.5+0.2, 0], [0, 0, 0]]
 
 corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"]
 

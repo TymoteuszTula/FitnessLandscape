@@ -82,7 +82,7 @@ def create_sz_sparse(states, L):
             if states[i][j] == -1:
                 sz[i, i] = -1
 
-            SZ.append(1 / 2 * sz.tobsr())
+        SZ.append(1/2 * sz.tobsr())
 
     return SZ
 
