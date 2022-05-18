@@ -13,6 +13,10 @@ class SijCalculator:
     def __init__(self):
         pass
 
+    def xhat(q1, q2):
+        qhat = q1/sqrt(q1**2 + q2**2)
+        return qhat
+
     def calculate_Sq(L, Sij, no_ofqpoints=100):
         Sq = {}
         ip = np.arange(L)
@@ -139,9 +143,114 @@ class SijCalculator:
 
         return Sq
 
+    def calculate_exp_fac(L, no_ofqpoints):
+        Rs = []
+        a = 1
+        p = SijCalculator.get_radius(L, a)
+
+        theta_diff = 2 * pi/L
+
+        theta_range = np.arange(theta_diff/2, 2*pi+theta_diff/2, theta_diff)
+
+        Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+
+        Rxs = Rs[:,0]
+        Rys = Rs[:,1]
+
+        kx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+        ky = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+
+        Rxs_diff = np.repeat(Rxs[np.newaxis], L, axis=0)
+        Rxs_diff = Rxs_diff - Rxs_diff.T
+        Rys_diff = np.repeat(Rys[np.newaxis], L, axis=0)
+        Rys_diff = Rys_diff - Rys_diff.T
+
+        imj_x = np.repeat(Rxs_diff[np.newaxis], no_ofqpoints, axis=0)
+        imj_y = np.repeat(Rys_diff[np.newaxis], no_ofqpoints, axis=0)
+
+        k_tile_x = np.transpose(np.tile(kx, (L, L, 1)), (2, 0, 1))
+        k_tile_y = np.transpose(np.tile(ky, (L, L, 1)), (2, 0, 1))
+
+        exp_fac_x = np.exp(1j * imj_x * k_tile_x)
+        exp_fac_x = np.transpose(np.repeat(exp_fac_x[np.newaxis], no_ofqpoints, axis=0), (1, 0, 2, 3))
+
+        exp_fac_y = np.exp(1j * imj_y * k_tile_y)
+        exp_fac_y = np.repeat(exp_fac_y[np.newaxis], no_ofqpoints, axis=0)
+
+        exp_fac = exp_fac_x * exp_fac_y
+
+        return exp_fac
+
+    def calculate_Lambdas(L):
+        
+        Lambdas = np.array(SijCalculator.returnLambdaMatrices(L))
+
+        return Lambdas
+
     def calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas):
 
-        pass
+        Sq = {}
+
+        Sij_trans = np.array([[[[Sij["Sxx"][i][j], Sij["Sxy"][i][j], Sij["Sxz"][i][j]],
+                                [Sij["Syx"][i][j], Sij["Syy"][i][j], Sij["Syz"][i][j]],
+                                [Sij["Szx"][i][j], Sij["Szy"][i][j], Sij["Szz"][i][j]]]
+                                for i in range(L)] for j in range(L)])
+
+        Sij_trans = [[Lambdas[i] @ Sij_trans[i][j] @ Lambdas[j].T for i in range(L)] for j in range(L)]
+
+        Sij_new = {"Sxx": [[Sij_trans[i][j][0][0] for i in range(L)] for j in range(L)], 
+                   "Sxy": [[Sij_trans[i][j][0][1] for i in range(L)] for j in range(L)],
+                   "Sxz": [[Sij_trans[i][j][0][2] for i in range(L)] for j in range(L)],
+                   "Syx": [[Sij_trans[i][j][1][0] for i in range(L)] for j in range(L)],
+                   "Syy": [[Sij_trans[i][j][1][1] for i in range(L)] for j in range(L)],
+                   "Syz": [[Sij_trans[i][j][1][2] for i in range(L)] for j in range(L)],
+                   "Szx": [[Sij_trans[i][j][2][0] for i in range(L)] for j in range(L)], 
+                   "Szy": [[Sij_trans[i][j][2][1] for i in range(L)] for j in range(L)],
+                   "Szz": [[Sij_trans[i][j][2][2] for i in range(L)] for j in range(L)]}
+
+        # Sq["Sxx"] = np.tensordot(exp_fac, Sij_new["Sxx"]) / L
+        # Sq["Sxy"] = np.tensordot(exp_fac, Sij_new["Sxy"]) / L
+        # Sq["Sxz"] = np.tensordot(exp_fac, Sij_new["Sxz"]) / L
+
+        # Sq["Syx"] = np.tensordot(exp_fac, Sij_new["Syx"]) / L
+        # Sq["Syy"] = np.tensordot(exp_fac, Sij_new["Syy"]) / L
+        # Sq["Syz"] = np.tensordot(exp_fac, Sij_new["Syz"]) / L
+
+        # Sq["Szx"] = np.tensordot(exp_fac, Sij_new["Szx"]) / L
+        # Sq["Szy"] = np.tensordot(exp_fac, Sij_new["Szy"]) / L
+        # Sq["Szz"] = np.tensordot(exp_fac, Sij_new["Szz"]) / L
+
+        Sq["Sxx"] = np.tensordot(exp_fac, Sij_new["Sxx"]) / L
+        Sq["Sxy"] = np.tensordot(exp_fac, Sij_new["Sxy"]) / L
+        Sq["Sxz"] = np.tensordot(exp_fac, Sij_new["Sxz"]) / L
+
+        Sq["Syx"] = np.tensordot(exp_fac, Sij_new["Syx"]) / L
+        Sq["Syy"] = np.tensordot(exp_fac, Sij_new["Syy"]) / L
+        Sq["Syz"] = np.tensordot(exp_fac, Sij_new["Syz"]) / L
+
+        Sq["Szx"] = np.tensordot(exp_fac, Sij_new["Szx"]) / L
+        Sq["Szy"] = np.tensordot(exp_fac, Sij_new["Szy"]) / L
+        Sq["Szz"] = np.tensordot(exp_fac, Sij_new["Szz"]) / L
+
+        qx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+        qy = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+
+        Sq_proper = Sq.copy()
+
+        for i, qx_i in enumerate(qx):
+            for j, qy_j in enumerate(qy):
+                qxhat = SijCalculator.xhat(qx_i, qy_j)
+                qyhat = SijCalculator.xhat(qy_j, qx_i)
+                Sq_proper["Sxx"][i][j] = (1-qxhat**2) * Sq_proper["Sxx"][i][j]
+                Sq_proper["Syy"][i][j] = (1-qyhat**2) * Sq_proper["Syy"][i][j]
+                Sq_proper["Sxy"][i][j] = -qxhat * qyhat * Sq_proper["Sxy"][i][j]
+                Sq_proper["Syx"][i][j] = -qxhat * qyhat * Sq_proper["Syx"][i][j]
+
+        Sq_int = np.real(Sq_proper["Sxx"] + Sq_proper["Syy"] + Sq_proper["Szz"] + 
+                        Sq_proper["Sxy"] + Sq_proper["Syx"])
+
+        return Sq, Sq_int
+
 
     def transform_correlations(L, i, j, Sij, Rs, thetas):
 
@@ -392,7 +501,7 @@ class SijCalculator:
 
         return Sij, Sq
 
-    def return_Sq2(L, dm, SX, SY, SZ, temp, no_ofqpoints):
+    def return_Sq2(L, dm, SX, SY, SZ, temp, no_ofqpoints, exp_fac, Lambdas):
         if temp == 0:
             gs2 = dm[np.newaxis]
 
@@ -415,9 +524,9 @@ class SijCalculator:
                     Sij["Szz"][i, j] = (gs2.conj() @ SZ[i] @ SZ[j] @ gs2.T)[0,0]
 
                     
-            Sq = SijCalculator.calculate_Sq_2d(L, Sij)
+            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
 
-            return Sij, Sq
+            return Sij, Sq, Sq_int
         else:
             Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
             "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
@@ -454,11 +563,13 @@ class SijCalculator:
                         Sij["Szy"][i, j] = nan
                         Sij["Szz"][i, j] = nan
 
-            Sq = SijCalculator.calculate_Sq_2d(L, Sij)
+            #Sq = SijCalculator.calculate_Sq_2d(L, Sij)
 
-            return Sij, Sq
+            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
 
-    def returnSq2_dm_not_sparse(L, dm, SX, SY, SZ, no_ofqpoints):
+            return Sij, Sq, Sq_int
+
+    def returnSq2_dm_not_sparse(L, dm, SX, SY, SZ, no_ofqpoints, exp_fac, Lambdas):
         Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
         "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
         "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
@@ -482,9 +593,10 @@ class SijCalculator:
                 Sij["Szz"][i, j] = np.trace(dm @ SZ[i] @ SZ[j])/ dm_trace
 
 
-        Sq = SijCalculator.calculate_Sq_2d(L, Sij)
+        Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
 
-        return Sij, Sq
+        return Sij, Sq, Sq_int
+
         
     def find_gs_sparse(ham):
         return sprsla.eigsh(ham, 1)
