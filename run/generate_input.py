@@ -29,6 +29,8 @@ if __name__ == "__main__":
     parser.add_argument("--start_from", type=int, default=1)
     parser.add_argument("--save_rhams", type=bool, nargs='+', default=[False])
     parser.add_argument("--temp_type", type=str, nargs='+', default=["value"])
+    parser.add_argument("--no_qpoints", type=int, nargs='+', default=[100])
+    parser.add_argument("--save_Sqs", type=bool, nargs='+', default=[False])
 
     args = parser.parse_args()
 
@@ -36,7 +38,8 @@ if __name__ == "__main__":
               "L": args.L, "temp": args.temp, "h_max": args.h_max, "J_max": args.J_max, 
               "delta": args.delta, "no_of_processes": args.no_of_processes, 
               "no_of_samples": args.no_of_samples, "save_rhams": args.save_rhams,
-              "temp_type": args.temp_type}
+              "temp_type": args.temp_type, "no_qpoints": args.no_qpoints,
+              "save_Sqs": args.save_Sqs}
 
     comb = [{"L": args.L[i]} for i in range(len(args.L))]
     for key in params.keys():

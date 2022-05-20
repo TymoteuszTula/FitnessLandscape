@@ -212,6 +212,10 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         corr = params["corr"]
         H_in = params["H_in"]
         en_in = params["en_in"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
+        Sq_int_in = params["Sq_int_in"]
+        no_qpoints = params["no_qpoints"]
         try:
             return_ham = params["return_ham"]
         except:
@@ -226,25 +230,29 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=no_qpoints,
+                                                         exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
-            state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            state_rand = SijCalculator.return_dm_not_sparse(H_plus_delta, 1/temp)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.returnSq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=no_qpoints,
+                                                         exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)    
+            dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
         H_in_m = H_in - en_in[0] * sprs.eye(len(states))
@@ -252,9 +260,11 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total)}
         else:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)}
 
 class RandomizerHamiltonianNNRandomDelta(Randomizer):
 
@@ -290,6 +300,10 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         corr = params["corr"]
         H_in = params["H_in"]
         en_in = params["en_in"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
+        Sq_int_in = params["Sq_int_in"]
+        no_qpoints = params["no_qpoints"]
         try:
             return_ham = params["return_ham"]
         except:
@@ -308,25 +322,31 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=no_qpoints,
+                                                          exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
-            state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            state_rand = SijCalculator.return_dm_not_sparse(H_plus_delta, 1/temp)
+            if np.sum(np.isnan(state_rand)) != 0:
+                print("Not correct")
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.returnSq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=no_qpoints,
+                                                          exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
+            dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
         H_in_m = H_in - en_in[0] * sprs.eye(len(states))
@@ -334,9 +354,11 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total)}
         else:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)}
 
 
 class RandomizerState(Randomizer):
@@ -418,18 +440,24 @@ class RandomizerStateRandomDelta(Randomizer):
         corr = params["corr"]
         H_in = params["H_in"]
         en_in = params["en_in"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
+        Sq_int_in = params["Sq_int_in"]
+        no_qpoints = params["no_qpoints"]
 
         state_no = 2 ** L
 
         if temp == 0:
             state_rand = state_in + delta * (np.random.rand(state_no) + 1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
             state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=no_qpoints,
+                                                          exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
@@ -439,13 +467,16 @@ class RandomizerStateRandomDelta(Randomizer):
             ranp = ranp.conj().T @ ranp
             state_rand = state_in + ranp
             state_rand = state_rand / np.trace(state_rand)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=100)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.returnSq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=no_qpoints,
+                                                                        exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
+            dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
             energy = (H_in @ state_rand).trace()
 
-        return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand}
+        return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
+                    "Sq_int": Sq_int_total}

@@ -34,7 +34,8 @@ else:
 
 par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_max": "1",
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
-              "output_prefix": "output", "save_rhams": "False", "temp_type": "value"}
+              "output_prefix": "output", "save_rhams": "False", "temp_type": "value",
+              "no_qpoints": "100", "save_Sqs": "False"}
 
 foldername_input = './run/input/feynman/' + args.input_folder
 
@@ -48,7 +49,7 @@ J_nn_rand = np.random.rand(3, 3)
 J_nn_rand = 1 / 2 * J_nn_rand.conj().T @ J_nn_rand
 np.random.seed()
 
-h = [[0, 0, 0.90]]
+h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
 J_nn = [[-0.5-0.2, 0, 0], [0, -0.5+0.2, 0], [0, 0, 0]]
@@ -78,11 +79,17 @@ for i in no_file:
     delta = str(par_values["delta"]).split("-")
     delta = [float(delta[i]) for i in range(len(delta))]
     temp_type = str(par_values["temp_type"])
+    no_qpoints = int(par_values["no_qpoints"])
 
     if par_values["save_rhams"] == "True":
         save_rhams = True
     else:
         save_rhams = False
+
+    if par_values["save_Sqs"] == "True":
+        save_Sqs = True
+    else:
+        save_Sqs = False
 
     # Change in chosing temperature
 
@@ -136,7 +143,9 @@ for i in no_file:
         raise ValueError("Inproper rand_type name")
 
     stabsparse = StabilityAnalysisSparse(ham, rand, corr, save_rhams, 
-                                         temp_mul=temp, temp_type=temp_type)
+                                         temp_mul=temp, temp_type=temp_type,
+                                         no_qpoints=no_qpoints,
+                                         save_Sqs=save_Sqs)
     foldername = './run/output/feynman/'
     output_split = output_filename.split("/")
     if len(output_split) != 1:
