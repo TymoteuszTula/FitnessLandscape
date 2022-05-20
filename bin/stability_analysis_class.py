@@ -80,11 +80,7 @@ class StabilityAnalysisSparse:
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
-<<<<<<< HEAD
-            #self.diffSq_int += diffSq_int
-=======
             self.diffSq_int += Sq_int
->>>>>>> implement_Sqint
             self.ham_dist += ham_dist
             if self.save_Sqs:
                 self.Sqs += Sqs
@@ -97,16 +93,11 @@ class StabilityAnalysisSparse:
             self.en += en
             self.diffSij += diffSij
             self.diffSq += diffSq
-<<<<<<< HEAD
-            #self.diffSq_int += diffSq_int
-            self.Sqs += Sqs
-=======
             self.diffSq_int += Sq_int
             if self.save_Sqs:
                 self.Sqs += Sqs
             else:
                 self.Sqs += []
->>>>>>> implement_Sqint
 
         
 
