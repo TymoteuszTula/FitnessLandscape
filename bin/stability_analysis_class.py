@@ -176,14 +176,14 @@ class StabilityAnalysisSparse:
             state_in = gs[:,0]
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
             Sij_in, Sq_in, Sq_int_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ, 
-                                                       self.ham.temp, no_ofqpoints=100,
+                                                       self.ham.temp, no_ofqpoints=self.no_qpoints,
                                                        exp_fac=exp_fac, Lambdas=Lambdas)
         else:
             en_in, _ = SijCalculator.find_gs_sparse(H_in)
-            state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
+            state_in = SijCalculator.return_dm_not_sparse(H_in, 1/self.ham.temp)
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in, Sq_int_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ,
-                                                       self.ham.temp, no_ofqpoints=100,
+            Sij_in, Sq_in, Sq_int_in = SijCalculator.returnSq2_dm_not_sparse(self.ham.L, state_in, SX, SY, SZ,
+                                                       no_ofqpoints=self.no_qpoints,
                                                        exp_fac=exp_fac, Lambdas=Lambdas)
 
         self.Sij_in = Sij_in

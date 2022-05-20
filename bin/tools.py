@@ -3,7 +3,7 @@
 import numpy as np
 import scipy.sparse.linalg as sprsla
 import scipy.linalg as spla
-from math import pi, nan, sqrt, cos, sin
+from math import pi, nan, sqrt, cos, sin, nan
 
 class SijCalculator:
     r"""Prototype of class designed to return Sij correlation functions"""
@@ -235,18 +235,21 @@ class SijCalculator:
         qx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
         qy = np.linspace(-2*pi, 2*pi, no_ofqpoints)
 
-        Sq_proper = Sq.copy()
+        Sq_proper = {"Sxx": np.zeros((qx.size, qy.size), dtype=complex), 
+                     "Syy": np.zeros((qx.size, qy.size), dtype=complex),
+                     "Sxy": np.zeros((qx.size, qy.size), dtype=complex),
+                     "Syx": np.zeros((qx.size, qy.size), dtype=complex)}
 
         for i, qx_i in enumerate(qx):
             for j, qy_j in enumerate(qy):
                 qxhat = SijCalculator.xhat(qx_i, qy_j)
                 qyhat = SijCalculator.xhat(qy_j, qx_i)
-                Sq_proper["Sxx"][i][j] = (1-qxhat**2) * Sq_proper["Sxx"][i][j]
-                Sq_proper["Syy"][i][j] = (1-qyhat**2) * Sq_proper["Syy"][i][j]
-                Sq_proper["Sxy"][i][j] = -qxhat * qyhat * Sq_proper["Sxy"][i][j]
-                Sq_proper["Syx"][i][j] = -qxhat * qyhat * Sq_proper["Syx"][i][j]
+                Sq_proper["Sxx"][i][j] = (1-qxhat**2) * Sq["Sxx"][i][j]
+                Sq_proper["Syy"][i][j] = (1-qyhat**2) * Sq["Syy"][i][j]
+                Sq_proper["Sxy"][i][j] = -qxhat * qyhat * Sq["Sxy"][i][j]
+                Sq_proper["Syx"][i][j] = -qxhat * qyhat * Sq["Syx"][i][j]
 
-        Sq_int = np.real(Sq_proper["Sxx"] + Sq_proper["Syy"] + Sq_proper["Szz"] + 
+        Sq_int = np.real(Sq_proper["Sxx"] + Sq_proper["Syy"] + Sq["Szz"] + 
                         Sq_proper["Sxy"] + Sq_proper["Syx"])
 
         return Sq, Sq_int
@@ -576,10 +579,13 @@ class SijCalculator:
         
         Sq = {}
 
+        dm_trace = np.trace(dm)
+        if dm_trace == (nan + 1j * nan):
+            print("dm_trace not correct")
+
         for i in range(L):
             for j in range(L):
-                dm_trace = np.trace(dm)
-
+                
                 Sij["Sxx"][i, j] = np.trace(dm @ SX[i] @ SX[j])/ dm_trace
                 Sij["Sxy"][i, j] = np.trace(dm @ SX[i] @ SY[j]) / dm_trace
                 Sij["Sxz"][i, j] = np.trace(dm @ SX[i] @ SZ[j])/ dm_trace
@@ -626,6 +632,25 @@ class SijCalculator:
         re = sprsla.expm(-beta * ham.tocsc())
         return re / re.trace()
 
+    # def return_dm_not_sparse(ham, beta=1):
+    #     re = spla.expm(-beta * ham.todense())
+    #     return re / re.trace()
+
     def return_dm_not_sparse(ham, beta=1):
-        re = spla.expm(-beta * ham.todense())
-        return re / re.trace()
+        ham_dense = ham.todense()
+        eigvals, eigvecs = np.linalg.eig(ham_dense)
+        # trexp = np.sum(np.exp(-beta * eigvals))
+
+        # if np.isnan(trexp):
+        #     print("not correct")
+
+        # state = eigvecs @ np.diag(np.exp(-beta * eigvals) / trexp) @ eigvecs.conj().T
+
+        m = np.max(eigvals)
+        logTr = m + np.log(np.sum(np.exp(eigvals-m)))
+        logLamBar = eigvals - np.ones((eigvals.size,)) * logTr
+        LamBar = np.exp(logLamBar)
+
+        dm = eigvecs @ np.diag(LamBar) @ eigvecs.conj().T
+
+        return dm
