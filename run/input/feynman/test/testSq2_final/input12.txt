@@ -1,0 +1,17 @@
+#Feynman
+
+output_prefix= test/testSq2_final/output
+L= 4
+ham_type= NNRand
+rand_type= ham_rand_randDelta
+temp= 0.0
+h_max= 1
+J_max= 1
+delta= 1-2
+no_of_processes= 4
+no_of_samples= 200
+save_rhams= False
+temp_type= gap
+no_qpoints= 100
+save_Sqs= False
+END

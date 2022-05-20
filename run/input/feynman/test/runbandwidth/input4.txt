@@ -1,0 +1,15 @@
+#Feynman
+
+output_prefix= test/runbandwidth/output
+L= 4
+ham_type= NNAf
+rand_type= ham_randNN
+temp= 0.5
+h_max= 1
+J_max= 1
+delta= 1-2-1-1
+no_of_processes= 8
+no_of_samples= 1000
+save_rhams= False
+temp_type= bandwidth
+END
