@@ -72,7 +72,7 @@ class StabilityAnalysisSparse:
 
         if self.randomizer.rand_ham:
             if self.save_rand_ham:
-                dist, en, diffSij, diffSq, ham_dist, hams = self.generate_random_Sij_sparse_with_hams(no_of_samples)
+                dist, en, diffSij, diffSq, ham_dist, hams, Sqs, Sq_int = self.generate_random_Sij_sparse_with_hams(no_of_samples)
                 self.rhams += hams
             else:
                 dist, en, diffSij, diffSq, ham_dist, Sqs, Sq_int = self.generate_random_Sij_sparse(no_of_samples)
@@ -243,21 +243,26 @@ class StabilityAnalysisSparse:
         SX = create_sx_sparse(states, self.ham.L)
         SY = create_sy_sparse(states, self.ham.L)
         SZ = create_sz_sparse(states, self.ham.L)
+        exp_fac = SijCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
+        Lambdas = SijCalculator.calculate_Lambdas(self.ham.L)
         if self.ham.temp == 0:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ, 
-                                                       self.ham.temp, no_ofqpoints=100)
+            Sij_in, Sq_in, Sq_int_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ, 
+                                                       self.ham.temp, no_ofqpoints=self.no_qpoints,
+                                                       exp_fac=exp_fac, Lambdas=Lambdas)
         else:
             en_in, _ = SijCalculator.find_gs_sparse(H_in)
-            state_in = SijCalculator.return_dm_sparse(H_in, 1/self.ham.temp)
+            state_in = SijCalculator.return_dm_not_sparse(H_in, 1/self.ham.temp)
             #Sij_in = SijCalculator.return_Sij(self.ham.L, state_in, SX, SY, SZ, self.ham.temp)
-            Sij_in, Sq_in = SijCalculator.return_Sq2(self.ham.L, state_in, SX, SY, SZ,
-                                                       self.ham.temp, no_ofqpoints=100)
+            Sij_in, Sq_in, Sq_int_in = SijCalculator.returnSq2_dm_not_sparse(self.ham.L, state_in, SX, SY, SZ,
+                                                       no_ofqpoints=self.no_qpoints, exp_fac=exp_fac,
+                                                       Lambdas=Lambdas)
 
         self.Sij_in = Sij_in
         self.Sq_in = Sq_in
+        self.Sq_int_in = Sq_int_in
 
         start_time = time.time()
         # seeds = [[np.random.randint(1000)] for i in range(self.randomizer.no_of_processes)]
@@ -267,7 +272,8 @@ class StabilityAnalysisSparse:
                 pool.apply_async(self.set_seed, (seeds[i],))
             params = [{"H_in": H_in, "SX": SX, "SY": SY, "SZ": SZ, "en_in": en_in, 
                       "state_in": state_in, "Sij_init": Sij_in, "Sq_init": Sq_in, 
-                      "corr": self.corr, "return_ham": True}]
+                      "corr": self.corr, "return_ham": True, "exp_fac": exp_fac,
+                      "Lambdas": Lambdas, "Sq_int_in": Sq_int_in, "no_qpoints": self.no_qpoints}]
             iter = no_of_samples * params
             # seeds = np.random.randint(1000, size=4)
             # for j in range(self.randomizer.no_of_processes):
@@ -283,7 +289,9 @@ class StabilityAnalysisSparse:
         diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
         dist_ham = [data[i]["dist_ham"] for i in range(no_of_samples)]
         rham = [data[i]["rham"] for i in range(no_of_samples)]
-        return dist, en, diffSij, diffSq, dist_ham, rham
+        Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
+        Sq_int = [data[i]["Sq_int"] for i in range(no_of_samples)]
+        return dist, en, diffSij, diffSq, dist_ham, rham, Sqs, Sq_int
     
 
         # if self.randomizer.rand_ham:

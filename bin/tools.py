@@ -638,7 +638,7 @@ class SijCalculator:
 
     def return_dm_not_sparse(ham, beta=1):
         ham_dense = ham.todense()
-        eigvals, eigvecs = np.linalg.eig(ham_dense)
+        eigvals, eigvecs = np.linalg.eigh(-beta * ham_dense)
         # trexp = np.sum(np.exp(-beta * eigvals))
 
         # if np.isnan(trexp):

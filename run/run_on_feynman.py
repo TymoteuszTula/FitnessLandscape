@@ -52,7 +52,7 @@ np.random.seed()
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
-J_nn = [[-0.5-0.2, 0, 0], [0, -0.5+0.2, 0], [0, 0, 0]]
+J_nn = [[-0.5, 0, 0], [0, -0.5, 0], [0, 0, -0.5]]
 
 corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"]
 
