@@ -605,7 +605,10 @@ class SijCalculator:
 
         
     def find_gs_sparse(ham):
-        return sprsla.eigsh(ham, 1)
+        #return sprsla.eigsh(ham, 1, which="SA")
+        ham_den = ham.todense()
+        evs = np.linalg.eigvals(ham_den)
+        return [np.min(evs)], 0
 
     def find_eigvals(ham):
         return np.linalg.eigvals(ham)

@@ -354,8 +354,11 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
+            NN_data = {"h": h + ranH_h, "J_onsite": J_onsite + ranH_J_onsite,
+                       "J_nn": J_nn + ranH_J_nn, "J_nnn": J_nnn + ranH_J_nnn}
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
-                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total)}
+                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total),
+                    "NN_data": NN_data}
         else:
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
                     "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)}
