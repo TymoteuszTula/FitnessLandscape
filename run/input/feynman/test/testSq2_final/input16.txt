@@ -2,16 +2,16 @@
 
 output_prefix= test/testSq2_final/output
 L= 8
-ham_type= NNRand
+ham_type= NNAf
 rand_type= state_rand
-temp= 0.5
+temp= 1.0
 h_max= 1
 J_max= 1
-delta= 1
-no_of_processes= 4
-no_of_samples= 200
+delta= 0.5
+no_of_processes= 8
+no_of_samples= 2000
 save_rhams= False
-temp_type= gap
+temp_type= bandwidth
 no_qpoints= 100
 save_Sqs= False
 END

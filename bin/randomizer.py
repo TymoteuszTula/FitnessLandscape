@@ -261,10 +261,12 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
 
         if return_ham:
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
-                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total)}
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total),
+                    "ham_params": {"J": J + ranH_J, "h": h + ranH_h}, "Sq_int_list": Sq_int_rand}
         else:
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
-                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)}
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)
+                    , "Sq_int_list": Sq_int_rand}
 
 class RandomizerHamiltonianNNRandomDelta(Randomizer):
 
@@ -357,11 +359,14 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
             NN_data = {"h": h + ranH_h, "J_onsite": J_onsite + ranH_J_onsite,
                        "J_nn": J_nn + ranH_J_nn, "J_nnn": J_nnn + ranH_J_nnn}
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
-                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total),
-                    "NN_data": NN_data}
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total),
+                    "ham_params": NN_data, "Sq_int_list": Sq_int_rand}
         else:
+            NN_data = {"h": h + ranH_h, "J_onsite": J_onsite + ranH_J_onsite,
+                       "J_nn": J_nn + ranH_J_nn, "J_nnn": J_nnn + ranH_J_nnn}
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
-                    "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)}
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total),
+                    "ham_params": NN_data, "Sq_int_list": Sq_int_rand}
 
 
 class RandomizerState(Randomizer):
@@ -482,4 +487,5 @@ class RandomizerStateRandomDelta(Randomizer):
             energy = (H_in @ state_rand).trace()
 
         return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
-                    "Sq_int": Sq_int_total}
+                    "Sij_list": Sij_rand, "Sq_int": Sq_int_total}
+ 

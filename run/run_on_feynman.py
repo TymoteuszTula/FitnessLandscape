@@ -35,7 +35,8 @@ else:
 par_values = {"ham_type": "NNAf", "rand_type": "ham", "L": "4", "temp": "0", "h_max": "1",
               "J_max": "1", "delta": "0-1-0-0", "no_of_processes": "4", "no_of_samples": "5000",
               "output_prefix": "output", "save_rhams": "False", "temp_type": "value",
-              "no_qpoints": "100", "save_Sqs": "False"}
+              "no_qpoints": "100", "save_Sqs": "False", "save_Sijs": "False", "save_Sqints": "False",
+              "save_rham_params": "False"}
 
 foldername_input = './run/input/feynman/' + args.input_folder
 
@@ -52,7 +53,7 @@ np.random.seed()
 h = [[0, 0, 0]]
 J_onsite = np.zeros((3, 3))
 J_nnn = np.zeros((3, 3))
-J_nn = [[-0.5, 0, 0], [0, -0.5, 0], [0, 0, -0.5]]
+J_nn = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
 corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"]
 
@@ -90,6 +91,21 @@ for i in no_file:
         save_Sqs = True
     else:
         save_Sqs = False
+
+    if par_values["save_Sijs"] == "True":
+        save_Sijs = True
+    else:
+        save_Sijs = False
+
+    if par_values["save_Sqints"] == "True":
+        save_Sqints = True
+    else:
+        save_Sqints = False
+
+    if par_values["save_rham_params"] == "True":
+        save_rham_params = True
+    else:
+        save_rham_params = False
 
     # Change in chosing temperature
 
@@ -145,7 +161,10 @@ for i in no_file:
     stabsparse = StabilityAnalysisSparse(ham, rand, corr, save_rhams, 
                                          temp_mul=temp, temp_type=temp_type,
                                          no_qpoints=no_qpoints,
-                                         save_Sqs=save_Sqs)
+                                         save_Sqs=save_Sqs,
+                                         save_Sijs=save_Sijs,
+                                         save_rham_params=save_rham_params,
+                                         save_Sqints=save_Sqints)
     foldername = './run/output/feynman/'
     output_split = output_filename.split("/")
     if len(output_split) != 1:

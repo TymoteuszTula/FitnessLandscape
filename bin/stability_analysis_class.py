@@ -35,7 +35,8 @@ class StabilityAnalysisSparse:
     """
 
     def __init__(self, ham, randomizer, corr, save_rand_ham=False, temp_mul=None, temp_type="value",
-                       no_qpoints=100, save_Sqs=False):
+                       no_qpoints=100, save_Sqs=False, save_Sijs=False, save_rham_params=False,
+                       save_Sqints=False):
         self.ham = ham
         self.randomizer = randomizer
         self.corr = corr
@@ -50,10 +51,16 @@ class StabilityAnalysisSparse:
             if save_rand_ham:
                 self.rhams = []
         self.save_rand_ham = save_rand_ham
+        self.save_Sijs = save_Sijs
+        self.save_Sqints = save_Sqints
+        self.save_rham_params = save_rham_params
         self.time = []
         self.temp_mul = temp_mul
         self.temp_type = temp_type
         self.Sqs = []
+        self.Sijs = []
+        self.Sqints = []
+        self.ham_params = []
         self.no_qpoints = no_qpoints
         self.save_Sqs = save_Sqs
         #self.Sq_init = []
@@ -72,11 +79,11 @@ class StabilityAnalysisSparse:
 
         if self.randomizer.rand_ham:
             if self.save_rand_ham:
-                dist, en, diffSij, diffSq, ham_dist, hams, Sqs, Sq_int, NNInfos = self.generate_random_Sij_sparse_with_hams(no_of_samples)
+                dist, en, diffSij, diffSq, ham_dist, hams, Sqs, Sijs, Sqints, Sq_int, NNInfos = self.generate_random_Sij_sparse_with_hams(no_of_samples)
                 self.rhams += hams
                 self.NNInfos = NNInfos
             else:
-                dist, en, diffSij, diffSq, ham_dist, Sqs, Sq_int = self.generate_random_Sij_sparse(no_of_samples)
+                dist, en, diffSij, diffSq, ham_dist, Sqs, Sijs, Sqints, Sq_int, ham_params = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
@@ -85,11 +92,15 @@ class StabilityAnalysisSparse:
             self.ham_dist += ham_dist
             if self.save_Sqs:
                 self.Sqs += Sqs
-            else:
-                self.Sqs += []
+            if self.save_Sijs:
+                self.Sijs += Sijs
+            if self.save_Sqints:
+                self.Sqints += Sqints
+            if self.save_rham_params:
+                self.ham_params += ham_params
             
         else:
-            dist, en, diffSij, diffSq, Sqs, Sq_int = self.generate_random_Sij_sparse(no_of_samples)
+            dist, en, diffSij, diffSq, Sqs, Sijs, Sqints, Sq_int = self.generate_random_Sij_sparse(no_of_samples)
             self.dist += dist
             self.en += en
             self.diffSij += diffSij
@@ -97,8 +108,10 @@ class StabilityAnalysisSparse:
             self.diffSq_int += Sq_int
             if self.save_Sqs:
                 self.Sqs += Sqs
-            else:
-                self.Sqs += []
+            if self.save_Sijs:
+                self.Sijs += Sijs
+            if self.save_Sqints:
+                self.Sqints += Sqints
 
         
 
@@ -118,11 +131,12 @@ class StabilityAnalysisSparse:
         if not self.randomizer.rand_ham:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
                             "diffSq": self.diffSq, "en": self.en, "Sqs": self.Sqs, "Sq_init": self.Sq_in,
-                            "Sq_int": self.diffSq_int}
+                            "Sq_int": self.diffSq_int, "Sqints": self.Sqints}
         else:
             data_to_save = {"info": info, "dist": self.dist, "diffSij": self.diffSij, 
                             "diffSq": self.diffSq, "en": self.en, "ham_dist": self.ham_dist, "Sqs": self.Sqs,
-                             "Sq_init": self.Sq_in, "Sq_int": self.diffSq_int}
+                             "Sq_init": self.Sq_in, "Sq_int": self.diffSq_int, "ham_params": self.ham_params,
+                             "Sqints": self.Sqints}
             if self.save_rand_ham:
                 data_to_save["rhams"] = self.rhams
 
@@ -217,16 +231,21 @@ class StabilityAnalysisSparse:
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
             dist_ham = [data[i]["dist_ham"] for i in range(no_of_samples)]
             Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
+            Sijs = [data[i]["Sij_list"] for i in range(no_of_samples)]
+            Sqints = [data[i]["Sq_int_list"] for i in range(no_of_samples)]
             Sq_int = [data[i]["Sq_int"] for i in range(no_of_samples)]
-            return dist, en, diffSij, diffSq, dist_ham, Sqs, Sq_int
+            ham_params = [data[i]["ham_params"] for i in range(no_of_samples)]
+            return dist, en, diffSij, diffSq, dist_ham, Sqs, Sijs, Sqints, Sq_int, ham_params
         else:
             en = [data[i]["energy"] for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
             Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
+            Sijs = [data[i]["Sij_list"] for i in range(no_of_samples)]
+            Sqints = [data[i]["Sq_int_list"] for i in range(no_of_samples)]
             Sq_int = [data[i]["Sq_int"] for i in range(no_of_samples)]
-            return dist, en, diffSij, diffSq, Sqs, Sq_int
+            return dist, en, diffSij, diffSq, Sqs, Sijs, Sqints, Sq_int
 
     
     def generate_random_Sij_sparse_with_hams(self, no_of_samples):
@@ -293,7 +312,8 @@ class StabilityAnalysisSparse:
         NNinfos = [data[i]["NN_data"] for i in range(no_of_samples)]
         Sqs = [data[i]["Sq_list"] for i in range(no_of_samples)]
         Sq_int = [data[i]["Sq_int"] for i in range(no_of_samples)]
-        return dist, en, diffSij, diffSq, dist_ham, rham, Sqs, Sq_int, NNinfos
+        Sijs = [data[i]["Sij_list"] for i in range(no_of_samples)]
+        return dist, en, diffSij, diffSq, dist_ham, rham, Sqs, Sijs, Sq_int, NNinfos
     
 
         # if self.randomizer.rand_ham:
