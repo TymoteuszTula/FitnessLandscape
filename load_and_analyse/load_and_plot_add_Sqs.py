@@ -114,7 +114,7 @@ if __name__ == "__main__":
     ###############################################################################################################
     corr = ["Sxx", "Syy", "Szz", "Sxy", "Sxz", "Syz", "Syx", "Szx", "Szy"]
     # NNAf 
-    L = 9
+    L = 4
     h = [[0,0,0]]
     J_onsite = np.zeros((3, 3))
     J_nnn = np.zeros((3, 3))
@@ -152,19 +152,20 @@ if __name__ == "__main__":
     # StAnClasses
     st_an_spNNAf = StabilityAnalysisSparse(ham_NNAf, rand_NNAf, corr, False,
                                             temp_mul=0, temp_type='value', no_qpoints=100,
-                                            save_Sqs=True)
+                                            save_Sqs=True, save_Sqints=True)
     st_an_spNNRand = StabilityAnalysisSparse(ham_NNRand, rand_NNRand, corr, False,
                                             temp_mul=0, temp_type='value', no_qpoints=100,
-                                            save_Sqs=True)
+                                            save_Sqs=True, save_Sqints=True)
 
     st_an_spNNAf_ft = StabilityAnalysisSparse(ham_NNAf_ft, rand_NNAf_ft, corr, False,
                                             temp_mul=0.01, temp_type='value', no_qpoints=100,
-                                            save_Sqs=True)
+                                            save_Sqs=True, save_Sqints=True)
     st_an_spNNRand_ft = StabilityAnalysisSparse(ham_NNRand_ft, rand_NNRand_ft, corr, False,
                                             temp_mul=0.01, temp_type='value', no_qpoints=100,
-                                            save_Sqs=True)
+                                            save_Sqs=True, save_Sqints=True)
 
-    no_of_simulation = 5000
+    # Number of simulations
+    no_of_simulation = 500
 
     # Run simultaions
     st_an_spNNAf.run(no_of_simulation)
@@ -203,8 +204,8 @@ if __name__ == "__main__":
     axs1.set_ylabel(r"$\Delta S_{\psi}^{H_t}$")
 
     # SWITCH CASE -------------#
-    #case = "show scattering functions"
-    case = "show real functions"
+    case = "show scattering functions"
+    #case = "show real functions"
     ############################    
     
     if case == "show scattering functions":
@@ -212,9 +213,9 @@ if __name__ == "__main__":
         fig2, axs2 = plt.subplots(1,3)
         fig3, axs3 = plt.subplots(1,1)
 
-        orig_SQ = returnSq_int(st_an_spNNAf_ft.Sq_in)
-        SQ1 = returnSq_int(st_an_spNNAf_ft.Sqs[ly_c])
-        SQ2 = returnSq_int(st_an_spNNAf_ft.Sqs[lyxr_c])
+        orig_SQ = returnSq_int(st_an_spNNAf.Sq_in)
+        SQ1 = returnSq_int(st_an_spNNAf.Sqs[ly_c])
+        SQ2 = returnSq_int(st_an_spNNAf.Sqs[lyxr_c])
 
         max_values = [np.max(orig_SQ), np.max(SQ1), np.max(SQ2)]
         max_value = max(max_values)

@@ -487,5 +487,5 @@ class RandomizerStateRandomDelta(Randomizer):
             energy = (H_in @ state_rand).trace()
 
         return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
-                    "Sij_list": Sij_rand, "Sq_int": Sq_int_total}
+                    "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
  
