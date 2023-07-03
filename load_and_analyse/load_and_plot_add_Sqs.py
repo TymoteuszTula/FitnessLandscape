@@ -55,8 +55,9 @@ if __name__ == "__main__":
     J_nnn = np.zeros((3, 3))
     J_nn = [[1 + 0.25, 0, 0], [0, 1 - 0.25, 0], [0, 0, 1]]
 
-    # Number of processes
+    # Number of processes and simulations
     no_proc = 1
+    no_of_simulation = 500
 
     np.random.seed(42)
     h_rand = [np.random.rand(3)]
@@ -101,9 +102,6 @@ if __name__ == "__main__":
     st_an_spNNRand_ft = StabilityAnalysisSparse(ham_NNRand_ft, rand_NNRand_ft, corr, False,
                                             temp_mul=0.01, temp_type='value', no_qpoints=100,
                                             save_Sqs=True, save_Sqints=True)
-
-    # Number of simulations
-    no_of_simulation = 500
 
     # Run simultaions
     st_an_spNNAf.run(no_of_simulation)
