@@ -44,71 +44,6 @@ def returnSq_int(Sq_initial):
 
 if __name__ == "__main__":
 
-    foldername_input = './run/input/feynman/test/test_with_Sqs/'
-    foldername_output = './run/output/feynman/test/test_with_Sqs/'
-
-    file_no = 4
-
-    data = []
-
-    for i in range(file_no):
-        filename_i = "input" + str(i+1) + ".txt"
-        filename_o = "output" + str(i+1) + ".pickle"
-        with open(foldername_output + filename_o, 'rb') as fh:
-            data.append(pickle.load(fh))
-        with open(foldername_input + filename_i, "r") as fh:
-            content = fh.readlines()
-            ham_type = content[4][10:-1]
-            rand_type = content[5][11:-1]
-            data[-1]["ham_type"] = ham_type
-            data[-1]["rand_type"] = rand_type
-
-    rand_types = ["state_rand"]
-    temp_types = ["0", "1Gap"]
-    L = [4]
-    In_Ham = ["NNAf", "NNRand"]
-
-    Sq_diff = {rtype: {ttype: {L_i: [] for L_i in L} for ttype in temp_types} for rtype in In_Ham}
-    Sq_int_diff ={rtype: {ttype: {L_i: [] for L_i in L} for ttype in temp_types} for rtype in In_Ham}
-    dist = {rtype: {ttype: {L_i: [] for L_i in L} for ttype in temp_types} for rtype in In_Ham}
-    dist_ham = {rtype: {ttype: {L_i: [] for L_i in L} for ttype in temp_types} for rtype in In_Ham}
-
-    for i in range(file_no):
-
-        if data[i]["info"]["temp_mul"] < 1/4:
-            temp_label = "0"
-        else:
-            temp_label = "1Gap"
-
-        rand_label = data[i]["ham_type"]
-        L_label = data[i]["info"]["L"]
-
-        Sq_diff[rand_label][temp_label][L_label] += data[i]["diffSq"]
-        Sq_int_diff[rand_label][temp_label][L_label] += data[i]["Sq_int"]
-        dist[rand_label][temp_label][L_label] += data[i]["dist"]
-        # if rand_label != "state_rand":
-        #     dist_ham[rand_label][temp_label][L_label] += data[i]["ham_dist"]
-
-
-    X = [[dist["NNAf"]["0"][4], dist["NNRand"]["0"][4]],
-         [dist["NNAf"]["1Gap"][4], dist["NNRand"]["1Gap"][4]]]
-
-    Y1 = [[Sq_int_diff["NNAf"]["0"][4], Sq_int_diff["NNRand"]["0"][4]],
-         [Sq_int_diff["NNAf"]["1Gap"][4], Sq_int_diff["NNRand"]["1Gap"][4]]]
-
-    ###############################################################################################################
-    # Plotting figures
-    ###############################################################################################################
-
-    # fig, axs = plt.subplots(2, 2)
-    
-    # for i in range(2):
-    #     for j in range(2):
-    #         axs[i][j].plot(np.array(X[i][j]), np.array(Y1[i][j]), 'o', ms=1, alpha=0.3)
-
-    #         axs[i][j].grid()
-
-
     ###############################################################################################################
     # Create Hamiltonians
     ###############################################################################################################
@@ -119,6 +54,9 @@ if __name__ == "__main__":
     J_onsite = np.zeros((3, 3))
     J_nnn = np.zeros((3, 3))
     J_nn = [[1 + 0.25, 0, 0], [0, 1 - 0.25, 0], [0, 0, 1]]
+
+    # Number of processes
+    no_proc = 1
 
     np.random.seed(42)
     h_rand = [np.random.rand(3)]
@@ -144,10 +82,10 @@ if __name__ == "__main__":
 
     # Randomizers
     delta = 0.5
-    rand_NNAf = RandomizerStateRandomDelta(ham_NNAf, delta, no_of_processes=8)
-    rand_NNRand = RandomizerStateRandomDelta(ham_NNRand, delta, no_of_processes=8)
-    rand_NNAf_ft = RandomizerStateRandomDelta(ham_NNAf_ft, delta, no_of_processes=8)
-    rand_NNRand_ft = RandomizerStateRandomDelta(ham_NNRand_ft, delta, no_of_processes=8)
+    rand_NNAf = RandomizerStateRandomDelta(ham_NNAf, delta, no_of_processes=no_proc)
+    rand_NNRand = RandomizerStateRandomDelta(ham_NNRand, delta, no_of_processes=no_proc)
+    rand_NNAf_ft = RandomizerStateRandomDelta(ham_NNAf_ft, delta, no_of_processes=no_proc)
+    rand_NNRand_ft = RandomizerStateRandomDelta(ham_NNRand_ft, delta, no_of_processes=no_proc)
 
     # StAnClasses
     st_an_spNNAf = StabilityAnalysisSparse(ham_NNAf, rand_NNAf, corr, False,
