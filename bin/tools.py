@@ -4,6 +4,7 @@ import numpy as np
 import scipy.sparse.linalg as sprsla
 import scipy.linalg as spla
 from math import pi, nan, sqrt, cos, sin, nan
+from cmath import exp
 
 class SijCalculator:
     r"""Prototype of class designed to return Sij correlation functions"""
@@ -52,7 +53,7 @@ class SijCalculator:
 
         theta_diff = 2 * pi /L
 
-        thetas = np.arange(theta_diff/2, 2*pi+theta_diff/2, 2*pi/L)
+        thetas = np.arange(theta_diff/2, 2*pi + theta_diff/2, theta_diff)
         Lambdas = [[[cos(thetas[i]), sin(thetas[i]), 0],
                     [-sin(thetas[i]), cos(thetas[i]), 0],
                     [0, 0, 1]] for i in range(L)]
@@ -67,7 +68,7 @@ class SijCalculator:
 
         theta_diff = 2 * pi/L
 
-        theta_range = np.arange(theta_diff/2, 2*pi+theta_diff/2, theta_diff)
+        theta_range = np.arange(theta_diff, 2*pi+theta_diff/2, theta_diff)
 
         Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
 
@@ -150,7 +151,7 @@ class SijCalculator:
 
         theta_diff = 2 * pi/L
 
-        theta_range = np.arange(theta_diff/2, 2*pi+theta_diff/2, theta_diff)
+        theta_range = np.arange((pi-theta_diff)/2, -3*pi/2-theta_diff/2, -theta_diff)
 
         Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
 
@@ -180,6 +181,35 @@ class SijCalculator:
         exp_fac = exp_fac_x * exp_fac_y
 
         return exp_fac
+    
+    def calculate_exp_fac_simplified(L, no_ofqpoints):
+
+        Rs = []
+        a = 1
+        p = SijCalculator.get_radius(L, a)
+
+        theta_diff = 2 * pi/L
+
+        theta_range = np.arange(theta_diff/2, -2*pi-theta_diff/2, -theta_diff)
+
+        Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+        
+        exp_fac = np.zeros((no_ofqpoints, no_ofqpoints, L, L), dtype=complex)
+
+        qx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+        qy = np.linspace(-2*pi, 2*pi, no_ofqpoints)
+
+        for i, qx_i in enumerate(qx):
+            for j, qy_j in enumerate(qy):
+                for s in range(L):
+                    for r in range(L):
+                        vec = (qx_i * (Rs[s][0] - Rs[r][0]) +
+                               qy_j * (Rs[s][1] - Rs[r][1]))
+                        exp_fac[i,j,s,r] = exp(1j * vec)
+
+
+        return exp_fac  
+
 
     def calculate_Lambdas(L):
         
@@ -219,6 +249,9 @@ class SijCalculator:
         # Sq["Szx"] = np.tensordot(exp_fac, Sij_new["Szx"]) / L
         # Sq["Szy"] = np.tensordot(exp_fac, Sij_new["Szy"]) / L
         # Sq["Szz"] = np.tensordot(exp_fac, Sij_new["Szz"]) / L
+
+        # exp_fac = np.reshape(exp_fac, (no_ofqpoints, no_ofqpoints, L**2))
+        # Sij_new = {key:np.reshape(Sij_new[key], (L**2,)) for key in Sij_new.keys()}
 
         Sq["Sxx"] = np.tensordot(exp_fac, Sij_new["Sxx"]) / L
         Sq["Sxy"] = np.tensordot(exp_fac, Sij_new["Sxy"]) / L
