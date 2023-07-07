@@ -16,6 +16,9 @@ class Randomizer:
         pass
 
     def return_random_state(self):
+        """ This function should generate a random sample and then return the data for the generated instance of a random Hamiltonian.
+		
+		(abstract interface routine to be implemented in derived classes) """
         pass
 
     def calculate_dist_overlap(self, state_in, state_rand):

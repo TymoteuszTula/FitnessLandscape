@@ -13,9 +13,15 @@ class SijCalculator:
     def __init__(self):
         pass
 
-    def xhat(q1, q2):
-        qhat = q1/sqrt(q1**2 + q2**2)
-        return qhat
+    def qhat(q1, q2):
+		""" calculate the norm vector along the direction of the given x and y components"""
+        if (q1==0 and q2==0):
+            return (0,0)
+        else:
+            invnorm=1.0/sqrt(q1**2 + q2**2)
+            qxhat = q1*invnorm
+            qyhat = q2*invnorm
+        return (qxhat, qyhat)
 
     def calculate_Sq(L, Sij, no_ofqpoints=100):
         Sq = {}
@@ -147,24 +153,29 @@ class SijCalculator:
         Rs = []
         a = 1
         p = SijCalculator.get_radius(L, a)
-
+        
+        # positions of atoms in the molecule:
+        # differences between angles
         theta_diff = 2 * pi/L
 
         theta_range = np.arange(theta_diff/2, 2*pi+theta_diff/2, theta_diff)
-
+		# actual positions
         Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
 
         Rxs = Rs[:,0]
         Rys = Rs[:,1]
-
+		
+		# choose some range of momenta to look at (in general we could include some multiplier for overall range):
         kx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
         ky = np.linspace(-2*pi, 2*pi, no_ofqpoints)
 
+		# make vector of pairwise differences in x and y-positions:
         Rxs_diff = np.repeat(Rxs[np.newaxis], L, axis=0)
         Rxs_diff = Rxs_diff - Rxs_diff.T
         Rys_diff = np.repeat(Rys[np.newaxis], L, axis=0)
         Rys_diff = Rys_diff - Rys_diff.T
 
+		
         imj_x = np.repeat(Rxs_diff[np.newaxis], no_ofqpoints, axis=0)
         imj_y = np.repeat(Rys_diff[np.newaxis], no_ofqpoints, axis=0)
 
@@ -242,8 +253,7 @@ class SijCalculator:
 
         for i, qx_i in enumerate(qx):
             for j, qy_j in enumerate(qy):
-                qxhat = SijCalculator.xhat(qx_i, qy_j)
-                qyhat = SijCalculator.xhat(qy_j, qx_i)
+                (qxhat, qyhat) = SijCalculator.qhat(qx_i, qy_j)
                 Sq_proper["Sxx"][i][j] = (1-qxhat**2) * Sq["Sxx"][i][j]
                 Sq_proper["Syy"][i][j] = (1-qyhat**2) * Sq["Syy"][i][j]
                 Sq_proper["Sxy"][i][j] = -qxhat * qyhat * Sq["Sxy"][i][j]
