@@ -1,6 +1,6 @@
 #Feynman
 
-output_prefix= feynman2/run20052022/output
+output_prefix= feynman2/run08072023/output
 L= 8
 ham_type= NNAf
 rand_type= state_rand
@@ -14,4 +14,7 @@ save_rhams= False
 temp_type= value
 no_qpoints= 100
 save_Sqs= False
+save_Sijs= False
+save_Sqints= False
+save_rham_params= False
 END

@@ -1,0 +1,15 @@
+#Test
+
+output_prefix= rungaptest/output
+L= 4
+ham_type= NNRand
+rand_type= state_rand
+temp= 0.0
+h_max= 1
+J_max= 1
+delta= 1
+no_of_processes= 6
+no_of_samples= 200
+save_rhams= False
+temp_type= gap
+END

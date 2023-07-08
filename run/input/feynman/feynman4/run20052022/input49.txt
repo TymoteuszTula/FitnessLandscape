@@ -1,8 +1,8 @@
 #Feynman
 
-output_prefix= feynman4/run20052022/output
+output_prefix= feynman4/run08072023/output
 L= 6
-ham_type= NNAf
+ham_type= NNRand
 rand_type= state_rand
 temp= 0.25
 h_max= 1
@@ -14,4 +14,7 @@ save_rhams= False
 temp_type= bandwidth
 no_qpoints= 100
 save_Sqs= False
+save_Sijs= False
+save_Sqints= False
+save_rham_params= False
 END
