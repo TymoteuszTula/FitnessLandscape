@@ -5,13 +5,26 @@ import scipy.sparse.linalg as sprsla
 import scipy.linalg as spla
 from math import pi, nan, sqrt, cos, sin, nan
 from cmath import exp
+import sys
 
 class SijCalculator:
     r"""Prototype of class designed to return Sij correlation functions"""
 
     round_to = 10
 
-    def __init__(self):
+    def __init__(self, params={}):
+        """ set up the class for calculations of correlation functions.
+        	Valid parameters:
+        	params: dict
+        	   'geometry': allowed values are 'ring' and 'line'
+        """
+        if 'geometry' in params.keys():
+            self.geometry = params['geometry']
+        else:
+            self.geometry = 'ring'
+        if self.geometry != 'ring' and self.geometry != 'line':
+            print("Unknown choice of geometry for SijCalculator")
+            sys.exit()
         pass
 
     def qhat(q1, q2):
@@ -53,13 +66,22 @@ class SijCalculator:
 
     def get_radius(L, a):
         theta_n = 2*pi/L
-        return a / sqrt(2 * (1-cos(theta_n)))
+        return a / sqrt(2. * (1.-cos(theta_n)))
 
-    def returnLambdaMatrices(L):
+    def returnLambdaMatrices(self, L):
+        """ calculate matrices that indicate the direction of rotation of individual spin axes"""
+		
+        if (self.geometry=="ring"):
 
-        theta_diff = 2 * pi /L
-
-        thetas = np.arange(theta_diff/2, 2*pi + theta_diff/2, theta_diff)
+            theta_diff = 2 * pi /L
+			
+            thetas = np.arange(theta_diff/2, 2*pi + theta_diff/2, theta_diff)
+        elif (self.geometry=="line"):
+            thetas = [0.5*np.pi] * L
+        else:
+            print("Unknown choice of geometry for SijCalculator")
+            sys.exit()
+			
         Lambdas = [[[cos(thetas[i]), sin(thetas[i]), 0],
                     [-sin(thetas[i]), cos(thetas[i]), 0],
                     [0, 0, 1]] for i in range(L)]
@@ -67,17 +89,24 @@ class SijCalculator:
         return Lambdas
 
     def calculate_Sq_2d(L, Sij, no_ofqpoints=100):
+        """ calculate the structure factor Sij in real space, for a ring or chain of length L, as requested in the constructor """
         Sq = {}
         Rs = []
         a = 1
         p = SijCalculator.get_radius(L, a)
 
-        theta_diff = 2 * pi/L
+        if (self.geometry=="ring"):
+            theta_diff = 2 * pi/L
 
-        theta_range = np.arange(theta_diff, 2*pi+theta_diff/2, theta_diff)
+            theta_range = np.arange(theta_diff, 2*pi+theta_diff/2, theta_diff)
 
-        Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
-
+            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+        elif (self.geometry=="line"):
+            Rs = np.array([np.array([i, 0.0]) for i in range(L)])
+        else:
+            print("Unknown choice of geometry for SijCalculator")
+            sys.exit()
+			
         Rxs = Rs[:,0]
         Rys = Rs[:,1]
 
@@ -150,18 +179,25 @@ class SijCalculator:
 
         return Sq
 
-    def calculate_exp_fac(L, no_ofqpoints):
+    def calculate_exp_fac(self, L, no_ofqpoints):
         Rs = []
         a = 1
-        p = SijCalculator.get_radius(L, a)
         
-        # positions of atoms in the molecule:
-        # differences between angles
-        theta_diff = 2 * pi/L
+        if (self.geometry=="ring"):
+            p = SijCalculator.get_radius(L, a)
+        
+			# positions of atoms in the molecule:
+			# differences between angles
+            theta_diff = 2 * pi/L
 
-        theta_range = np.arange((pi-theta_diff)/2, -3*pi/2-theta_diff/2, -theta_diff)
-		# actual positions
-        Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+            theta_range = np.arange((pi-theta_diff)/2, -3*pi/2-theta_diff/2, -theta_diff)
+			# actual positions
+            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+        elif (self.geometry=="line"):
+            Rs = np.array([np.array([i*a, 0.0]) for i in range(L)])
+        else:
+            print("Unknown choice of geometry for SijCalculator")
+            sys.exit()
 
         Rxs = Rs[:,0]
         Rys = Rs[:,1]
@@ -193,17 +229,26 @@ class SijCalculator:
 
         return exp_fac
     
-    def calculate_exp_fac_simplified(L, no_ofqpoints):
+    def 	p_fac_simplified(self, L, no_ofqpoints):
 
         Rs = []
         a = 1
-        p = SijCalculator.get_radius(L, a)
+        
+        if (self.geometry=="ring"):
 
-        theta_diff = 2 * pi/L
+            p = SijCalculator.get_radius(L, a)
 
-        theta_range = np.arange(theta_diff/2, -2*pi-theta_diff/2, -theta_diff)
+            theta_diff = 2 * pi/L
 
-        Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+            theta_range = np.arange(theta_diff/2, -2*pi-theta_diff/2, -theta_diff)
+
+            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+        elif (self.geometry=="line"):
+            Rs = np.array([np.array([i*a, 0.0]) for i in range(L)])
+        else:
+            print("Unknown choice of geometry for SijCalculator")
+            sys.exit()
+
         
         exp_fac = np.zeros((no_ofqpoints, no_ofqpoints, L, L), dtype=complex)
 
@@ -222,9 +267,9 @@ class SijCalculator:
         return exp_fac  
 
 
-    def calculate_Lambdas(L):
+    def calculate_Lambdas(self, L):
         
-        Lambdas = np.array(SijCalculator.returnLambdaMatrices(L))
+        Lambdas = np.array(self.returnLambdaMatrices(L))
 
         return Lambdas
 

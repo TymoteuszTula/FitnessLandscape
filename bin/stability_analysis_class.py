@@ -21,6 +21,8 @@ import os
 
 
 class StabilityAnalysisSparse:
+    
+    
     r"""Class which provides or saves data for stability analysis of connection between correlation
     functions and Hamiltonians/states. By providing initial Hamiltonian, it generates random 
     Hamiltonians or states with, centred around those initial ones, and evaluates correlation 
@@ -33,13 +35,20 @@ class StabilityAnalysisSparse:
     ----------
     
     """
+    
+    # example of available parameters that can be passed to functions generate_random_Sij_*
+    template_params = {
+        #'geometry': 'ring' # valid choices for geometry: ring or line - comment one out as desired
+        'geometry': 'line'
+    }
 
     def __init__(self, ham, randomizer, corr, save_rand_ham=False, temp_mul=None, temp_type="value",
                        no_qpoints=100, save_Sqs=False, save_Sijs=False, save_rham_params=False,
-                       save_Sqints=False):
+                       save_Sqints=False, extra_params=template_params):
         self.ham = ham
         self.randomizer = randomizer
         self.corr = corr
+        self.params=extra_params
 
         self.dist = []
         self.diffSij = []
@@ -168,7 +177,7 @@ class StabilityAnalysisSparse:
         return data_to_load
 
 
-    def generate_random_Sij_sparse(self, no_of_samples):
+    def generate_random_Sij_sparse(self, no_of_samples, params={}):
         r"""Generate data for a given no of samples
         
         Parameters
@@ -184,8 +193,9 @@ class StabilityAnalysisSparse:
         SY = create_sy_sparse(states, self.ham.L)
         SZ = create_sz_sparse(states, self.ham.L)
         # New lines
-        exp_fac = SijCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
-        Lambdas = SijCalculator.calculate_Lambdas(self.ham.L)
+        CorrelationCalculator = SijCalculator(self.params)
+        exp_fac = CorrelationCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
+        Lambdas = CorrelationCalculator.calculate_Lambdas(self.ham.L)
         if self.ham.temp == 0:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
@@ -263,8 +273,9 @@ class StabilityAnalysisSparse:
         SX = create_sx_sparse(states, self.ham.L)
         SY = create_sy_sparse(states, self.ham.L)
         SZ = create_sz_sparse(states, self.ham.L)
-        exp_fac = SijCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
-        Lambdas = SijCalculator.calculate_Lambdas(self.ham.L)
+        CorrelationCalculator = SijCalculator(self.params)
+        exp_fac = CorrelationCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
+        Lambdas = CorrelationCalculator.calculate_Lambdas(self.ham.L)
         if self.ham.temp == 0:
             en_in, gs = SijCalculator.find_gs_sparse(H_in)
             state_in = gs[:,0]
