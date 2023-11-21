@@ -29,8 +29,22 @@ class Randomizer:
         return dist
 
 class RandomizerHamiltonianNN(Randomizer):
-
+    """ class to create random instances of NN Hamiltonians, but modulating the total magnitude o
+        the randomness with an extra uniform distribution; this yields a uniform distribution of
+        given widths for different coupling parameters around the reference Hamiltonian """
     def __init__(self, ham, delta, no_of_processes):
+        """ create an object to generate a sequence of NN Hamiltonian with parameters as follows
+			ham: instance of the reference Hamiltonian
+			
+			delta: array of widths of random distributions (uniform) for:
+			delta[0] = 1/2 magnitude of deviation of J_onsite from reference Hamiltonian
+			delta[1] = 1/2 magnitude of deviation of J_nn from reference Hamiltonian
+			delta[2] = 1/2 magnitude of deviation of J_nnn from reference Hamiltonian
+			delta[2] = 1/2 magnitude of deviation of random field h from reference Hamiltonian
+			
+			no_of_processes: int
+				number of threads to run in parallel
+		"""
         self.ham = ham
         if not isinstance(delta, list):
             raise ValueError("If change in Hamiltonian, delta has to be a list of 4 elements")
@@ -79,7 +93,7 @@ class RandomizerHamiltonianNN(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -91,7 +105,7 @@ class RandomizerHamiltonianNN(Randomizer):
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100,exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -154,7 +168,7 @@ class RandomizerHamiltonianRandom(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -166,7 +180,7 @@ class RandomizerHamiltonianRandom(Randomizer):
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -272,8 +286,23 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
                     , "Sq_int_list": Sq_int_rand}
 
 class RandomizerHamiltonianNNRandomDelta(Randomizer):
-
+    """ class to create random instances of NN Hamiltonians, but modulating the total magnitude of
+        the randomness with an extra uniform distribution; this yields a sawtooth distribution around
+        the reference Hamiltonian, so will be overall more instances close to that , as compared to
+        RandomizerHamiltonianNN """
     def __init__(self, ham, delta, no_of_processes):
+        """ create an object to generate a sequence of NN Hamiltonian with parameters as follows
+			ham: instance of the reference Hamiltonian
+			
+			delta: array of widths of random distributions for:
+			delta[0] = 1/2 magnitude of deviation of J_onsite from reference Hamiltonian
+			delta[1] = 1/2 magnitude of deviation of J_nn from reference Hamiltonian
+			delta[2] = 1/2 magnitude of deviation of J_nnn from reference Hamiltonian
+			delta[2] = 1/2 magnitude of deviation of random field h from reference Hamiltonian
+			
+			no_of_processes: int
+				number of threads to run in parallel
+        """
         self.ham = ham
         self.delta = delta
         if not isinstance(delta, list):
@@ -402,7 +431,7 @@ class RandomizerState(Randomizer):
         if temp == 0:
             state_rand = state_in + delta * (np.random.rand(state_no) + 1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
             state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -417,7 +446,7 @@ class RandomizerState(Randomizer):
             ranp = ranp.conj().T @ ranp
             state_rand = state_in + ranp
             state_rand = state_rand / np.trace(state_rand)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=100)
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=100, )
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
