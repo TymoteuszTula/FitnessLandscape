@@ -101,7 +101,8 @@ class RandomizerHamiltonianNN(Randomizer):
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
-                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+                S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
@@ -130,7 +131,7 @@ class RandomizerHamiltonianNN(Randomizer):
                             "h": h + ranH_h,
                             "J_onsite": J_onsite + ranH_J_onsite,
 							"J_nn": J_nn+ ranH_J_nn, "J_nnn": J_nnn + ranH_J_nnn},
-					Plots_for_paper_make_random_Hamiltonian_data.py"Sq_int_list": Sq_int_rand}
+							"Sq_int_list": Sq_int_rand}
         else:
             return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
                     "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)
