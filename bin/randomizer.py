@@ -45,7 +45,8 @@ class RandomizerHamiltonianNN(Randomizer):
 			no_of_processes: int
 				number of threads to run in parallel
 		"""
-        self.ham = ham
+        self.ham = ham#
+        print("Using RandomizerHamiltonianNN")
         if not isinstance(delta, list):
             raise ValueError("If change in Hamiltonian, delta has to be a list of 4 elements")
         elif len(delta) != 4:
@@ -72,9 +73,12 @@ class RandomizerHamiltonianNN(Randomizer):
         SX = params["SX"]
         SY = params["SY"]
         SZ = params["SZ"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
         corr = params["corr"]
         H_in = params["H_in"]
         en_in = params["en_in"]
+        Sq_int_in = params["Sq_int_in"]
         try:
             return_ham = params["return_ham"]
         except:
@@ -93,24 +97,25 @@ class RandomizerHamiltonianNN(Randomizer):
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
-                S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
-                Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100,exp_fac=exp_fac, Lambdas=Lambdas)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100,exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
@@ -119,14 +124,30 @@ class RandomizerHamiltonianNN(Randomizer):
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int": sqrt(Sq_int_total),
+                    "ham_params": {
+                            "h": h + ranH_h,
+                            "J_onsite": J_onsite + ranH_J_onsite,
+							"J_nn": J_nn+ ranH_J_nn, "J_nnn": J_nnn + ranH_J_nnn},
+					Plots_for_paper_make_random_Hamiltonian_data.py"Sq_int_list": Sq_int_rand}
         else:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy,
+                    "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total)
+                    , "Sq_int_list": Sq_int_rand}
+        # previous return statement:
+#        if return_ham:
+#            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "Sq_int_list": Sq_int_rand}
+#        else:
+#            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "Sq_int_list": Sq_int_rand}
+            
+
 
 class RandomizerHamiltonianRandom(Randomizer):
 
     def __init__(self, ham, delta, no_of_processes):
         self.ham = ham
+        print("Using RandomizerHamiltonianRandom")
         if not isinstance(delta, list):
             raise ValueError("If change in Hamiltonian, delta has to be a list of 2 elements")
         elif len(delta) != 2:

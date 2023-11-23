@@ -224,17 +224,21 @@ class StabilityAnalysisSparse:
             params = [{"H_in": H_in, "SX": SX, "SY": SY, "SZ": SZ, "en_in": en_in, 
                       "state_in": state_in, "Sij_init": Sij_in, "Sq_init": Sq_in, 
                       "corr": self.corr, "exp_fac": exp_fac, "Lambdas": Lambdas,
-                      "Sq_int_in": Sq_int_in, "no_qpoints": self.no_qpoints}]
+                      "Sq_int_in": Sq_int_in, "no_qpoints": self.no_qpoints, "return_ham": True}]
             iter = no_of_samples * params
             # seeds = np.random.randint(1000, size=4)
             # for j in range(self.randomizer.no_of_processes):
             #     iter[j]["seed"] = seeds[j]
+            #print ("Input to pool: t-iter=", type(iter))
             data = pool.map(self.randomizer.return_random_state, iter)
         stop_time = time.time()
 
         self.time.append(stop_time-start_time)
 
         if self.randomizer.rand_ham:
+        
+            print("sample data:",data[0])
+            print("sample data (keys):",data[0].keys())
             en = [data[i]["energy"] for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
