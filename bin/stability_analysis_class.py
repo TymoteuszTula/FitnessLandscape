@@ -18,7 +18,7 @@ import scipy.sparse.linalg as sprsla
 import pickle
 import time
 import os 
-
+import tqdm
 
 class StabilityAnalysisSparse:
     
@@ -229,8 +229,9 @@ class StabilityAnalysisSparse:
             # seeds = np.random.randint(1000, size=4)
             # for j in range(self.randomizer.no_of_processes):
             #     iter[j]["seed"] = seeds[j]
-            #print ("Input to pool: t-iter=", type(iter))
-            data = pool.map(self.randomizer.return_random_state, iter)
+            # print ("Input to pool: t-iter=", type(iter))
+            #data = pool.map(self.randomizer.return_random_state, iter)
+            data = list(tqdm.tqdm(pool.imap_unordered(self.randomizer.return_random_state, iter), total=len(iter)))
         stop_time = time.time()
 
         self.time.append(stop_time-start_time)
