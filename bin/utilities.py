@@ -12,7 +12,7 @@ from cmath import exp
 # approximately the r.m.s. difference between S(q) and S'(q)
 # and divides by the r.m.s. deviation of S(q).
 # Note that we don't need to know the q-values because
-# the ration taken at the end cancels the norms of the
+# the ratio taken at the end cancels the norms of the
 # integrals.
 #
 def dist_S(mat_tar,mat_rnd):

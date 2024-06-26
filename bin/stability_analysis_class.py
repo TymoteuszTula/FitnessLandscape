@@ -233,6 +233,7 @@ class StabilityAnalysisSparse:
             #data = pool.map(self.randomizer.return_random_state, iter)
             data = list(tqdm.tqdm(pool.imap_unordered(self.randomizer.return_random_state, iter), total=len(iter)))
         stop_time = time.time()
+        print ("Completed sampling random instances")
 
         self.time.append(stop_time-start_time)
 
@@ -314,9 +315,10 @@ class StabilityAnalysisSparse:
             # seeds = np.random.randint(1000, size=4)
             # for j in range(self.randomizer.no_of_processes):
             #     iter[j]["seed"] = seeds[j]
-            data = pool.map(self.randomizer.return_random_state, iter)
+            # data = pool.map(self.randomizer.return_random_state, iter)
+            data = list(tqdm.tqdm(pool.imap_unordered(self.randomizer.return_random_state, iter), total=len(iter)))
         stop_time = time.time()
-
+        print ("Completed sampling random instances")
         self.time.append(stop_time-start_time)
 
         en = [data[i]["energy"] for i in range(no_of_samples)]
