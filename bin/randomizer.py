@@ -91,7 +91,6 @@ class RSquaredDensityMatrixDistribution(AbstractDensityMatrixDistribution):
 		ranp = self.elementdistribution.get_random_elements(delta, reference_rho.shape)
 		ranp = ranp.conj().T @ ranp
 		rho_rand = reference_rho + ranp
-		print ("Dimensions input: ",reference_rho.shape, ", output: ", rho_rand.shape)
 		return rho_rand / np.trace(rho_rand)
 		
 class ProjectedDensityMatrixDistribution(AbstractDensityMatrixDistribution):
