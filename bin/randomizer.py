@@ -25,7 +25,7 @@ class ComplexUniformDistributionSquare(AbstractElementDistribution):
 		pass
 	def get_random_elements(self, delta, shape):
 		""" this method implements the call to the relevant distribution"""
-		return delta * (np.random.rand(shape) - 0.5 + 1j * np.random.rand(shape) -0.5j)
+		return delta * (np.random.rand(*shape) - 0.5 + 1j * np.random.rand(*shape) -0.5j)
 
 class ComplexUniformDistributionCircle(AbstractElementDistribution):
 	"""implementing a complex distribution which generates complex numbers in the circle of radius delta """
@@ -658,7 +658,7 @@ class RandomizerStateRandomDelta(RandomizerState):
 				description of reference system.
         """
         # super().return_random_state()
-        delta = self.delta_max * np.random.rand(1)
+        delta = self.delta_max * np.random.rand(1)[0]
         return self.sampler(delta, params)
                     
     def _ZeroTemperatureSampler(self, delta, params):
@@ -714,7 +714,6 @@ class RandomizerStateRandomDelta(RandomizerState):
         no_qpoints = params["no_qpoints"]	            # Here state_in must be dense
         # generation of actual random density matrix is contracted out to generator object:
         state_rand = self.dm_sampler.get_density_matrix(state_in, delta)
-        
         Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.returnSq2_dm_not_sparse(self.ham.L, state_rand, SX, SY, SZ,                 				no_ofqpoints=no_qpoints, exp_fac=exp_fac, Lambdas=Lambdas)
         S_total = 0
         Sq_total = 0

@@ -10,10 +10,19 @@ def create_states(L=3):
     for state_i in state_no:
         str_state = ('{:0' + str(L) + 'b}').format(state_i)
         states.append([2 * int(j) - 1 for j in str_state])
-
     return states
 
 def apply_op(states, op, j, i):
+    """ apply the operator described by op to the j-th spin in the basis state i
+		op : string
+		  name of the operator to apply - Sx, Sy or Sz
+		j : position of spin on which to act with the operator
+		i : index of the many-body basis state on which to act
+		returns: tuple (idx, amplitude)
+		  where idx = index of the target state
+		        amplitude = operator matrix element connecting i and idx
+	
+    """
 
     if op == "Sz":
         res = (i, 1/2 * states[i][j])
