@@ -241,7 +241,7 @@ class StabilityAnalysisSparse:
         
             print("sample data:",data[0])
             print("sample data (keys):",data[0].keys(), flush=True)
-            en = [data[i]["energy"] for i in range(no_of_samples)]
+            en = [np.real(data[i]["energy"]) for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
@@ -253,7 +253,7 @@ class StabilityAnalysisSparse:
             ham_params = [data[i]["ham_params"] for i in range(no_of_samples)]
             return dist, en, diffSij, diffSq, dist_ham, Sqs, Sijs, Sqints, Sq_int, ham_params
         else:
-            en = [data[i]["energy"] for i in range(no_of_samples)]
+            en = [np.real(data[i]["energy"]) for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
             diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
             diffSq = [data[i]["Sq"] for i in range(no_of_samples)]
@@ -320,8 +320,8 @@ class StabilityAnalysisSparse:
         stop_time = time.time()
         print ("Completed sampling random instances in time: ",stop_time-start_time, flush=True)
         self.time.append(stop_time-start_time)
-
-        en = [data[i]["energy"] for i in range(no_of_samples)]
+        
+        en = [np.real(data[i]["energy"]) for i in range(no_of_samples)]
         dist = [data[i]["dist"] for i in range(no_of_samples)]
         diffSij = [data[i]["Sij"] for i in range(no_of_samples)]
         diffSq = [data[i]["Sq"] for i in range(no_of_samples)]

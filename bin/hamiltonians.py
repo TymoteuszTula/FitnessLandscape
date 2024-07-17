@@ -96,6 +96,137 @@ class GeneralHamiltonian(Hamiltonian):
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
         return create_hamiltonian_sparse(self.states, params_input=params)
+        
+        
+class GeneralHamiltonianRandomUniform(Hamiltonian):
+    """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution over -J_max .. J_max and the field strength drawn from a uniform distribution """
+    def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
+        self.L = L
+        self.states = create_states(L)
+        self.temp = temp
+        self.bc = bc
+        # Randomly Initialise J:
+        # First, we create an list of length L of empty lists:
+        J = np.empty((L, 0)).tolist()
+
+
+        # Then, we populate each list within the list with another list of length L:
+        for i in range(L):
+            J[i]=np.empty((L, 0)).tolist()
+
+        # We now have a list of list of empty lists: J[i][j] gives the interaction
+        #                              between the spin at i and the spin at j (not yet populated)
+        # Fill J:
+        # We populate each element J[i][j] with a matrix giving the 9 interactions between
+        # the x,y,z components of the spin at i and the x,y,z components of the spin at j:
+        for i in range(L):
+            for j in range(L):
+                tmp_J=J_max_value*(1.0-2.0*np.random.rand(3,3)) # <-- uniform signed distribution of magnitudes for different spin components
+                J[i][j]=0.5*(tmp_J+tmp_J.T)
+		
+
+        # Note due to the structure of the Hamiltonian and the spin commutation relations,
+        # we can assume J[i][j][alpha][beta] to have certain symmetries, for instance
+        # J[i][i][alpha][beta]=-J[i][i][beta][alpha]
+        # J[i][j][alpha][beta]=J[j][i][beta][alpha]
+        # However, we do not need to impose those symmetries - the Hamiltonian will take
+        # care of that. See random_hamiltonians.lyx
+        #
+        # Now create the random field:
+        #
+        self.h = [h_max_value * (1.0-2.0*np.random.rand(3))] # <-- uniform signed distribution of field strength components
+        self.J = J
+
+    def get_init_ham(self):
+        params = {"L": self.L, "J": self.J, "h": self.h}
+        return create_hamiltonian_sparse(self.states, params_input=params)
+
+
+class GeneralHamiltonianRandomUniformOverallSign(Hamiltonian):
+    """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution of maximum magnitude J_max with overall sign for each link and the field strength drawn from a normal distribution """
+    def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
+        self.L = L
+        self.states = create_states(L)
+        self.temp = temp
+        self.bc = bc
+        # Randomly Initialise J:
+        # First, we create an list of length L of empty lists:
+        J = np.empty((L, 0)).tolist()
+
+
+        # Then, we populate each list within the list with another list of length L:
+        for i in range(L):
+            J[i]=np.empty((L, 0)).tolist()
+
+        # We now have a list of list of empty lists: J[i][j] gives the interaction
+        #                              between the spin at i and the spin at j (not yet populated)
+        # Fill J:
+        # We populate each element J[i][j] with a matrix giving the 9 interactions between
+        # the x,y,z components of the spin at i and the x,y,z components of the spin at j:
+        for i in range(L):
+            for j in range(L):
+                tmp_J=J_max_value*np.random.rand(3,3) # <-- uniform distribution of magnitudes for different spin components;
+                J[i][j]=0.5*(tmp_J+tmp_J.T)*(1.0-2.0*np.random.rand()) # symmetrize and apply overall random sign
+
+
+        # Note due to the structure of the Hamiltonian and the spin commutation relations,
+        # we can assume J[i][j][alpha][beta] to have certain symmetries, for instance
+        # J[i][i][alpha][beta]=-J[i][i][beta][alpha]
+        # J[i][j][alpha][beta]=J[j][i][beta][alpha]
+        # However, we do not need to impose those symmetries - the Hamiltonian will take
+        # care of that. See random_hamiltonians.lyx
+        #
+        # Now create the random field:
+        #
+        self.h = [h_max_value * np.random.randn(3)]
+        self.J = J
+
+    def get_init_ham(self):
+        params = {"L": self.L, "J": self.J, "h": self.h}
+        return create_hamiltonian_sparse(self.states, params_input=params)
+
+class GeneralHamiltonianRandomNormal(Hamiltonian):
+    """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution over -J_max .. J_max and the field strength drawn from a uniform distribution """
+    def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
+        self.L = L
+        self.states = create_states(L)
+        self.temp = temp
+        self.bc = bc
+        # Randomly Initialise J:
+        # First, we create an list of length L of empty lists:
+        J = np.empty((L, 0)).tolist()
+
+
+        # Then, we populate each list within the list with another list of length L:
+        for i in range(L):
+            J[i]=np.empty((L, 0)).tolist()
+
+        # We now have a list of list of empty lists: J[i][j] gives the interaction
+        #                              between the spin at i and the spin at j (not yet populated)
+        # Fill J:
+        # We populate each element J[i][j] with a matrix giving the 9 interactions between
+        # the x,y,z components of the spin at i and the x,y,z components of the spin at j:
+        for i in range(L):
+            for j in range(L):
+                tmp_J=J_max_value*np.random.randn(3,3) # <-- uniform signed distribution of magnitudes for different spin components
+                J[i][j]=0.5*(tmp_J+tmp_J.T) # symmetrize the couplings
+
+
+        # Note due to the structure of the Hamiltonian and the spin commutation relations,
+        # we can assume J[i][j][alpha][beta] to have certain symmetries, for instance
+        # J[i][i][alpha][beta]=-J[i][i][beta][alpha]
+        # J[i][j][alpha][beta]=J[j][i][beta][alpha]
+        # However, we do not need to impose those symmetries - the Hamiltonian will take
+        # care of that. See random_hamiltonians.lyx
+        #
+        # Now create the random field:
+        #
+        self.h = [h_max_value * np.random.randn(3)] # <-- uniform signed distribution of field strength components
+        self.J = J
+
+    def get_init_ham(self):
+        params = {"L": self.L, "J": self.J, "h": self.h}
+        return create_hamiltonian_sparse(self.states, params_input=params)
 
 class RandomHamiltonianTI(Hamiltonian):
 

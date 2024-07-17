@@ -20,8 +20,9 @@ class AbstractElementDistribution:
 		pass
 		
 class ComplexUniformDistributionSquare(AbstractElementDistribution):
-	"""implementing a complex distribution which generates complex numbers in the unit square """
+	"""implementing a complex distribution which generates complex numbers in the square spanning -delta/2 .. delta/2 along the real and imaginary coordinate axis"""
 	def __init__(self):
+		print ("Using ComplexUniformDistributionSquare", flush=True)
 		pass
 	def get_random_elements(self, delta, shape):
 		""" this method implements the call to the relevant distribution"""
@@ -30,6 +31,7 @@ class ComplexUniformDistributionSquare(AbstractElementDistribution):
 class ComplexUniformDistributionCircle(AbstractElementDistribution):
 	"""implementing a complex distribution which generates complex numbers in the circle of radius delta """
 	def __init__(self):
+		print ("Using ComplexUniformDistributionCircle", flush=True)
 		pass
 	def get_random_elements(self, delta, shape):
 		""" this method implements the call to the relevant distribution"""
@@ -38,6 +40,9 @@ class ComplexUniformDistributionCircle(AbstractElementDistribution):
 		# Generate random radii with the correct distribution
 		radii = np.sqrt(np.random.uniform(0, delta**2, shape))
 		return radii * np.exp(1j * angles)
+		#rst = radii * np.exp(1j * angles)
+		#print("Random draw in UC: ",type(rst),rst)
+		#return rst
 		
 		
 class ComplexNormalDistribution(AbstractElementDistribution):
@@ -62,6 +67,7 @@ def SelectElementDistribution(shape):
 		elementdistribution = ComplexNormalDistribution()
 	else:
 		print("Unknown 'shape' of distribution, please select from: 'uniformSquare', 'uniformCircle', or 'normal' ")
+		exit(1)
 
 	return elementdistribution
 	
@@ -288,6 +294,9 @@ class RandomizerHamiltonianNN(Randomizer):
 class RandomizerHamiltonianRandom(Randomizer):
 
     def __init__(self, ham, delta, no_of_processes):
+        """delta : tuple
+			gives input for random variation in couplings and fields: (delta_J, delta_h)
+        """
         self.ham = ham
         print("Using RandomizerHamiltonianRandom")
         if not isinstance(delta, list):
@@ -310,6 +319,10 @@ class RandomizerHamiltonianRandom(Randomizer):
         temp = self.ham.temp
         Sij_init = params["Sij_init"]
         Sq_init = params["Sq_init"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
+        Sq_int_in = params["Sq_int_in"]
+        no_qpoints = params["no_qpoints"]
         state_in = params["state_in"]
         SX = params["SX"]
         SY = params["SY"]
@@ -321,34 +334,54 @@ class RandomizerHamiltonianRandom(Randomizer):
             return_ham = params["return_ham"]
         except:
             return_ham = False
-
-        ranH_J = delta[0] * (np.random.rand(3, 3) - 0.5)
-        ranH_J = 1 / 2 * ranH_J.conj().T @ ranH_J
+        zero_couplings=np.zeros((3,3))
+        ranH_J = []
+        for i in range(L):
+            row=[]
+            for j in range(L):
+                if not np.allclose(J[i][j],zero_couplings): # only modify couplings that are already non-zero
+                    tmp_J = delta[0] * (np.random.rand(3, 3) - 0.5)
+                    tmp_J = tmp_J.conj().T + tmp_J # symmetrize the difference
+                    row.append(J[i][j] + tmp_J)
+                else:
+                    row.append(zero_couplings)
+            ranH_J.append(row)
+			
+        if (len(ranH_J)!=L):
+            print("Wrong length of list ranH_J")
+            exit(1)
+        for i in range(L):
+            if (len(ranH_J[i])!=L):
+                print("Wrong length of list ranH_J[{}]".format(i))
+                exit(1)
+				
         ranH_h = delta[1] * (np.random.rand(3) - 0.5)
 
-        H_plus_delta = create_hamiltonian_sparse(states, params_input={"L":L, "J": J + ranH_J,
+        H_plus_delta = create_hamiltonian_sparse(states, params_input={"L":L, "J": ranH_J,
                                                                        "h": h + ranH_h})
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = gs[:,0]
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
             energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
             
         else:
             en_rand, _ = SijCalculator.find_gs_sparse(H_plus_delta)
             state_rand = SijCalculator.return_dm_sparse(H_plus_delta, 1/temp)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
+            Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
@@ -357,9 +390,11 @@ class RandomizerHamiltonianRandom(Randomizer):
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham, "rham": H_plus_delta}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "rham": H_plus_delta, "ham_params": {"J": ranH_J, "h": h + ranH_h}, "Sq_int": sqrt(Sq_int_total), "Sq_int_list": Sq_int_rand}
         else:
-            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "dist_ham": dist_ham}
+            return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand, "Sij_list": Sij_rand, "dist_ham": dist_ham, "Sq_int": sqrt(Sq_int_total), "Sq_int_list": Sq_int_rand}
+            
+		
 
 class RandomizerHamiltonianRandomRandomDelta(Randomizer):
 
@@ -642,6 +677,7 @@ class RandomizerStateRandomDelta(RandomizerState):
         self.no_of_processes = no_of_processes
         self.rand_ham = False
         self.rand_delta = True
+        print  ("Setting up RandomizerStateRandomDelta")
         if not 'shape' in distribution_type:
             print("Please define the 'shape' of your distribution: 'uniformSquare', 'uniformCircle', or 'normal' ")
             exit(1)
