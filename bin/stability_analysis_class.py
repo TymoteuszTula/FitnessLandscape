@@ -239,7 +239,7 @@ class StabilityAnalysisSparse:
 
         if self.randomizer.rand_ham:
         
-            print("sample data:",data[0])
+            #print("sample data:",data[0])
             print("sample data (keys):",data[0].keys(), flush=True)
             en = [np.real(data[i]["energy"]) for i in range(no_of_samples)]
             dist = [data[i]["dist"] for i in range(no_of_samples)]
