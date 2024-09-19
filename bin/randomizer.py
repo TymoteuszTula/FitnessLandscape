@@ -696,9 +696,9 @@ class RandomizerStateRandomDelta(RandomizerState):
         if 'scaleWithSize' in distribution_type:
             if distribution_type['scaleWithSize']:
                 if ham.temp == 0.0:
-                    self.delta_max *= np.pow(self.ham.dimension,-0.5)
+                    self.delta_max *= np.self.ham.get_dimension()**(-0.5)
                 else:
-                    self.delta_max *= np.pow(self.ham.dimension,-0.5)
+                    self.delta_max *= self.ham.get_dimension()**(-0.5)
 
     def return_random_state(self, params):
         """ see also documentation for super().return_random_state()

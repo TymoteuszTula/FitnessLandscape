@@ -11,6 +11,9 @@ class Hamiltonian:
 
     def get_init_ham(self):
         pass
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        pass
 
 class NNHamiltonian(Hamiltonian):
 
@@ -79,6 +82,10 @@ class NNHamiltonian(Hamiltonian):
         self.J_nn = J_nn
         self.J_nnn = J_nnn
 
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
+
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
         return create_hamiltonian_sparse(self.states, params_input=params)
@@ -92,6 +99,10 @@ class GeneralHamiltonian(Hamiltonian):
         self.temp = temp
         self.bc = bc
         self.J = J
+
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
@@ -137,6 +148,10 @@ class GeneralHamiltonianRandomUniform(Hamiltonian):
         self.h = [h_max_value * (1.0-2.0*np.random.rand(3))] # <-- uniform signed distribution of field strength components
         self.J = J
 
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
+
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
         return create_hamiltonian_sparse(self.states, params_input=params)
@@ -181,6 +196,10 @@ class GeneralHamiltonianRandomUniformOverallSign(Hamiltonian):
         self.h = [h_max_value * np.random.randn(3)]
         self.J = J
 
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
+
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
         return create_hamiltonian_sparse(self.states, params_input=params)
@@ -224,6 +243,10 @@ class GeneralHamiltonianRandomNormal(Hamiltonian):
         self.h = [h_max_value * np.random.randn(3)] # <-- uniform signed distribution of field strength components
         self.J = J
 
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
+
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
         return create_hamiltonian_sparse(self.states, params_input=params)
@@ -245,6 +268,10 @@ class RandomHamiltonianTI(Hamiltonian):
             self.J = J
         self.temp = temp
         self.bc = bc
+
+    def get_dimension(self):
+        """ return the dimension of the underlying Hilbert space"""
+        return 2**self.L
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
