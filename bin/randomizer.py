@@ -292,7 +292,9 @@ class RandomizerHamiltonianNN(Randomizer):
 
 
 class RandomizerHamiltonianRandom(Randomizer):
-
+    """ RandomizerHamiltonianRandom provides a random deviation of non-zero terms in a given input Hamiltonian
+		input parameters: widths for the deviations for couplings J and fields h.
+    """
     def __init__(self, ham, delta, no_of_processes):
         """delta : tuple
 			gives input for random variation in couplings and fields: (delta_J, delta_h)
@@ -397,7 +399,7 @@ class RandomizerHamiltonianRandom(Randomizer):
 		
 
 class RandomizerHamiltonianRandomRandomDelta(Randomizer):
-
+    """ randomize J and h, additionally multiplying each with a random amplitude between 0 and 1 for each realisation """
     def __init__(self, ham, delta, no_of_processes):
         self.ham = ham
         if not isinstance(delta, list):
@@ -604,7 +606,9 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
 
 	
 class RandomizerState(Randomizer):
-
+    """ class for randomising state vectors around a target state
+        no further evolutions of this class have been implemented - for more advanced usage, see RandomizerStateRandomDelta, below.
+    """
     def __init__(self, ham, delta, no_of_processes):
         self.ham = ham
         self.delta = delta
@@ -671,6 +675,8 @@ class RandomizerStateRandomDelta(RandomizerState):
 				'shape': allowed values are: 'uniformSquare', 'uniformCircle', 'normal'
 				'rhoMethod': defining the algorithm for sampling random density matrices, allowed values are: 'squareRandom', 'projectEigenvalues'
 				'rhoParams': further parameters for dm generator
+				'scaleWithSize': flag indicating if scaling with Hilbert-space dimension should be considered
+				
 		"""
         self.ham = ham
         self.delta_max = delta_max
@@ -687,6 +693,12 @@ class RandomizerStateRandomDelta(RandomizerState):
         else:
             self.sampler = self._FiniteTemperatureSampler
             self.dm_sampler = SelectDensityMatrixSampler(self.element_distribution, {'method': distribution_type['rhoMethod'], 'params': distribution_type['rhoParams']})
+        if 'scaleWithSize' in distribution_type:
+            if distribution_type['scaleWithSize']:
+                if ham.temp == 0.0:
+                    self.delta_max *= np.pow(self.ham.dimension,-0.5)
+                else:
+                    self.delta_max *= np.pow(self.ham.dimension,-0.5)
 
     def return_random_state(self, params):
         """ see also documentation for super().return_random_state()
