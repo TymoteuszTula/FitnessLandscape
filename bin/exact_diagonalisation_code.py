@@ -10,19 +10,31 @@ def create_states(L=3):
     for state_i in state_no:
         str_state = ('{:0' + str(L) + 'b}').format(state_i)
         states.append([2 * int(j) - 1 for j in str_state])
+        
+	# this list is not needed. We know the binary numbers from 0 to 2^L-1 represent the spin configurations!
+	
     return states
 
 def apply_op(states, op, j, i):
     """ apply the operator described by op to the j-th spin in the basis state i
 		op : string
 		  name of the operator to apply - Sx, Sy or Sz
-		j : position of spin on which to act with the operator
-		i : index of the many-body basis state on which to act
+		j -> j_spin: position of spin on which to act with the operator
+		i -> state_idx: index of the many-body basis state on which to act
 		returns: tuple (idx, amplitude)
 		  where idx = index of the target state
 		        amplitude = operator matrix element connecting i and idx
 	
     """
+
+	# use bit-wise operations:
+	# state_idx
+	# (note DiagHam implements a separate object which represents the Hilbert space)
+	# here: state = state_idx
+	# test if the j-th bit is set:
+	# bit = (state >> j_spin) & 1
+	# flip the j_spin-th bit:
+	# state = state ^ (1 << j_spin)
 
     if op == "Sz":
         res = (i, 1/2 * states[i][j])
