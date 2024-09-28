@@ -698,7 +698,7 @@ class RandomizerStateRandomDelta(RandomizerState):
                 if ham.temp == 0.0:
                     self.delta_max *= self.ham.get_dimension()**(-0.5)
                 else:
-                    self.delta_max *= self.ham.get_dimension()**(-0.5)
+                    self.delta_max *= self.ham.get_dimension()**(-0.25)
 
     def return_random_state(self, params):
         """ see also documentation for super().return_random_state()
