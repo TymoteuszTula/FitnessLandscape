@@ -2,18 +2,18 @@
 
 import numpy as np
 
-def create_states(L=3):
-    state_no = np.arange(2 ** L)
+# def create_states(L=3):
+#     state_no = np.arange(2 ** L)
 
-    states = []
+#     states = []
 
-    for state_i in state_no:
-        str_state = ('{:0' + str(L) + 'b}').format(state_i)
-        states.append([2 * int(j) - 1 for j in str_state])
+#     for state_i in state_no:
+#         str_state = ('{:0' + str(L) + 'b}').format(state_i)
+#         states.append([2 * int(j) - 1 for j in str_state])
         
-	# this list is not needed. We know the binary numbers from 0 to 2^L-1 represent the spin configurations!
+# 	# this list is not needed. We know the binary numbers from 0 to 2^L-1 represent the spin configurations!
 	
-    return states
+#     return states
 
 # def apply_op(states, op, j, i):
 #     """ apply the operator described by op to the j-th spin in the basis state i

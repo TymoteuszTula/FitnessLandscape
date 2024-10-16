@@ -1,7 +1,7 @@
 # exact_diagonalisation_code_sparse.py
 
 import numpy as np
-from exact_diagonalisation_code import create_states, apply_op
+from exact_diagonalisation_code import apply_op
 import scipy.sparse as sprs
 
 def create_hamiltonian_sparse(params_input={}):
