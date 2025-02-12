@@ -668,8 +668,11 @@ class RandomizerStateRandomDelta(RandomizerState):
 
     def __init__(self, ham, delta_max, no_of_processes, distribution_type):
         """
-				Sample
-				ham
+				Class to sample a random state in the vicinity of a given state
+				ham: Hamiltonian; alternatively, an object which provides the following fields:
+				      - int 'L' for Length of chain
+				      - int 'dimension' for Hilbert-space dimension
+				      - float 'temp' for temperature
 				distribution_type: dict - important keys:
 				
 				'shape': allowed values are: 'uniformSquare', 'uniformCircle', 'normal'
@@ -710,7 +713,20 @@ class RandomizerStateRandomDelta(RandomizerState):
         return self.sampler(delta, params)
                     
     def _ZeroTemperatureSampler(self, delta, params):
-        """ draw a random sample for a pure state """
+        """ draw a random sample for a pure state, and calculate its structure factor and other statistics against the given Hamiltonian
+		
+		parameters: dict, containing fields:
+			state_in: input state
+			no_qpoints: number of points used to discretize BZ along each axis when calculating S(q)
+			Sij_init: real-space correlator of input (target) state
+			Sq_init: structure factor for input (target) state
+			SX, SY, SZ: precalculated fields for input to SijCalculator.return_Sq2
+			exp_fac: precalculated Fourier factors for input to SijCalculator.return_Sq2
+			Lambdas: precalculated rotation matrices for input to SijCalculator.return_Sq2
+			Sq_int_in: sum of Sq over different pairs of spin components for input state
+			H_in: input Hamiltonian - if provided, this is used to calculate the difference in energy of random states being generated
+			en_in: float, energy of input state, used only if H_in is provided
+         """
         Sij_init = params["Sij_init"]
         Sq_init = params["Sq_init"]
         state_in = params["state_in"]
@@ -718,7 +734,6 @@ class RandomizerStateRandomDelta(RandomizerState):
         SY = params["SY"]
         SZ = params["SZ"]
         corr = params["corr"]
-        H_in = params["H_in"]
         en_in = params["en_in"]
         exp_fac = params["exp_fac"]
         Lambdas = params["Lambdas"]
@@ -740,13 +755,32 @@ class RandomizerStateRandomDelta(RandomizerState):
         Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
         #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
         dist = self.calculate_dist_overlap(state_in, state_rand)
-        energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
+        if "H_in" in params:
+            H_in = params["H_in"]
+            energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
+        else:
+            energy = 0.0
         return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
                     "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
                     
              
     def _FiniteTemperatureSampler(self, delta, params):
-        """ draw a random density matrix for the finite temperature case """
+        """ draw a random density matrix for the finite temperature case,
+			and calculate its structure factor and other statistics against the given Hamiltonian
+		
+		parameters: dict, containing fields:
+			state_in: input state
+			no_qpoints: number of points used to discretize BZ along each axis when calculating S(q)
+			Sij_init: real-space correlator of input (target) state
+			Sq_init: structure factor for input (target) state
+			SX, SY, SZ: precalculated fields for input to SijCalculator.return_Sq2
+			exp_fac: precalculated Fourier factors for input to SijCalculator.return_Sq2
+			Lambdas: precalculated rotation matrices for input to SijCalculator.return_Sq2
+			Sq_int_in: sum of Sq over different pairs of spin components for input state
+			H_in: input Hamiltonian - if provided, this is used to calculate the difference in energy of random states being generated
+			en_in: float, energy of input state, used only if H_in is provided
+         """
+
         Sij_init = params["Sij_init"]
         Sq_init = params["Sq_init"]
         state_in = params["state_in"]
@@ -770,7 +804,11 @@ class RandomizerStateRandomDelta(RandomizerState):
             Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
         Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
         dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
-        energy = (H_in @ state_rand).trace()
+        if "H_in" in params:
+        	H_in = params["H_in"]
+        	energy = (H_in @ state_rand).trace()
+        else:
+        	energy = 0.0
 
         return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
                     "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
