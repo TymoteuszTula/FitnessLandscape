@@ -438,9 +438,9 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         except:
             return_ham = False
 
-        ranH_J = delta[0] * (np.random.rand(3, 3) - 0.5)
-        ranH_J = 1 / 2 * ranH_J.conj().T @ ranH_J
-        ranH_h = delta[1] * (np.random.rand(3) - 0.5)
+        ranH_J = delta[0] * (np.random.randn(3, 3))
+        #ranH_J = 1 / 2 * ranH_J.conj().T @ ranH_J
+        ranH_h = delta[1] * (np.random.randn(3))
 
         H_plus_delta = create_hamiltonian_sparse(params_input={"L":L, "J": J + ranH_J,
                                                                        "h": h + ranH_h})
