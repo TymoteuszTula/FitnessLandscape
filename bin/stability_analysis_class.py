@@ -42,9 +42,36 @@ class StabilityAnalysisSparse:
         'geometry': 'line'
     }
 
-    def __init__(self, ham, randomizer, corr, save_rand_ham=False, temp_mul=None, temp_type="value",
+    def __init__(self, ham, randomizer, corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"], save_rand_ham=False, temp_mul=None, temp_type="value",
                        no_qpoints=100, save_Sqs=False, save_Sijs=False, save_rham_params=False,
                        save_Sqints=False, extra_params=template_params):
+        """ constructor, taking the following parameters
+			ham: Hamiltonian object
+			randomizer: randomizer object
+			corr: list
+			   set of correlators that should be calculated
+			save_rand_ham: bool
+			   flag indicating if randomly generated Hamiltonians are saved in output
+			temp_mul: float | None
+			   included in output, not currently used.
+			temp_type: string
+			   can be "value" - included in output, not currently used.
+			no_qpoints: int
+			   number of points used to discretize the BZ along each dimension
+			save_Sqs: bool
+			   if True, all structure factors are appended to a list at self.Sqs during run
+			save_Sijs: bool
+			   if True, all real-space correlators are appended to a list at self.Sijs during run
+			save_Sqints: bool
+			   if True, all Sq_int (sums of components of structure factor) are appended to a list at self.Sqints during run
+			save_rham_params: bool
+				if True, sets of parameters for generated random Hamiltonians are appended to a list at self.ham_params during run
+			extra_params: dict
+			   dictionary of additional parameters;
+			       fields currently implemented
+				      geometry: string
+				        allowed values are 'line' or 'ring'
+        """
         self.ham = ham
         self.randomizer = randomizer
         self.corr = corr
@@ -83,6 +110,8 @@ class StabilityAnalysisSparse:
 
         Parameters
         ----------
+			no_of_samples: int
+			   number of random samples to generate
 
         """
 
@@ -178,11 +207,12 @@ class StabilityAnalysisSparse:
 
 
     def generate_random_Sij_sparse(self, no_of_samples, params={}):
-        r"""Generate data for a given no of samples
-        
+        r"""Generate data for a given no of samples:
+			This routine provides an algorithm for randomly sampling the landscape of the fitness function (deviation from target structure factor)
         Parameters
         ----------
-
+			no_of_samples: int
+			   number of random states to consider
         """
         
         #H_in = calculate_ham_sparse(L, states, h, J_onsite, J_nn, J_nnn, bc)

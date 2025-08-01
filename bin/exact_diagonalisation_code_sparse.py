@@ -3,8 +3,10 @@
 import numpy as np
 from exact_diagonalisation_code import apply_op
 import scipy.sparse as sprs
+import time
 
-def create_hamiltonian_sparse(params_input={}):
+def create_hamiltonian_sparse(params_input={}, print_time=False):
+    start_time = time.time()
 
     default_params = {"L": 3, "J": [[[[1, 0, 0], [0, 1, 0], [0, 0, 1]]]], "h": [[0, 0, 0]]}
     params = {}
@@ -71,6 +73,9 @@ def create_hamiltonian_sparse(params_input={}):
     H_spar = H_spar.tobsr()
     H_spar.eliminate_zeros()
 
+    end_time = time.time()
+    if (print_time):
+        print("Time for executing create_hamiltonian_sparse: ",end_time-start_time)
     return H_spar
 
 def create_sz_sparse(L):

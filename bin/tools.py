@@ -274,7 +274,14 @@ class SijCalculator:
         return Lambdas
 
     def calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas):
-
+        """ calculate the structure factor on a discrete grid of points in momentum space
+		 parameters:
+		  L - int, chain length
+		  Sij - dictionary, with arrays of real-space correlated, labeled by spin-spin components 'Sxx', 'Sxy', ..., 'Szz'
+		  no_ofqpoints - int, number of points to discretise the BZ along each dimension
+		  exp_fac - matrix containing Fourier factors realising transform from r to q space
+		  Lambdas - rotation matrices
+        """
         Sq = {}
 
         Sij_trans = np.array([[[[Sij["Sxx"][i][j], Sij["Sxy"][i][j], Sij["Sxz"][i][j]],
