@@ -207,7 +207,6 @@ class RandomizerHamiltonianNN(Randomizer):
         super().return_random_state()
         delta = self.delta
         L = self.ham.L
-        states = self.ham.states
         h = self.ham.h
         J_onsite = self.ham.J_onsite
         J_nn = self.ham.J_nn
@@ -239,7 +238,7 @@ class RandomizerHamiltonianNN(Randomizer):
         ranH_J_nnn = 1 / 2 * ranH_J_nnn.T @ ranH_J_nnn
         ranH_h = delta[3] * (np.random.rand(3) - 0.5)
 
-        H_plus_delta = self.ham.calculate_ham_sparse(L, states, h + ranH_h, J_onsite + ranH_J_onsite,
+        H_plus_delta = self.ham.calculate_ham_sparse(L, h + ranH_h, J_onsite + ranH_J_onsite,
                                                      J_nn + ranH_J_nn, J_nnn + ranH_J_nnn, bc=bc)
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
@@ -267,8 +266,8 @@ class RandomizerHamiltonianNN(Randomizer):
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
-        H_in_m = H_in - en_in[0] * sprs.eye(len(states))
-        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
+        H_in_m = H_in - en_in[0] * sprs.eye(2**L)
+        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(2**L)
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
@@ -314,7 +313,6 @@ class RandomizerHamiltonianRandom(Randomizer):
         super().return_random_state()
         delta = self.delta
         L = self.ham.L
-        states = self.ham.states
         h = self.ham.h
         J = self.ham.J
         bc = self.ham.bc
@@ -359,7 +357,7 @@ class RandomizerHamiltonianRandom(Randomizer):
 				
         ranH_h = delta[1] * (np.random.rand(3) - 0.5)
 
-        H_plus_delta = create_hamiltonian_sparse(states, params_input={"L":L, "J": ranH_J,
+        H_plus_delta = create_hamiltonian_sparse(params_input={"L":L, "J": ranH_J,
                                                                        "h": h + ranH_h})
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
@@ -387,8 +385,8 @@ class RandomizerHamiltonianRandom(Randomizer):
             dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
-        H_in_m = H_in - en_in[0] * sprs.eye(len(states))
-        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
+        H_in_m = H_in - en_in[0] * sprs.eye(2**L)
+        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(2**L)
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
@@ -418,7 +416,6 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         super().return_random_state()
         delta = [self.delta[0] * np.random.rand(1)[0], self.delta[1] * np.random.rand(1)[0]]
         L = self.ham.L
-        states = self.ham.states
         h = self.ham.h
         J = self.ham.J
         bc = self.ham.bc
@@ -441,11 +438,11 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
         except:
             return_ham = False
 
-        ranH_J = delta[0] * (np.random.rand(3, 3) - 0.5)
-        ranH_J = 1 / 2 * ranH_J.conj().T @ ranH_J
-        ranH_h = delta[1] * (np.random.rand(3) - 0.5)
+        ranH_J = delta[0] * (np.random.randn(3, 3))
+        #ranH_J = 1 / 2 * ranH_J.conj().T @ ranH_J
+        ranH_h = delta[1] * (np.random.randn(3))
 
-        H_plus_delta = create_hamiltonian_sparse(states, params_input={"L":L, "J": J + ranH_J,
+        H_plus_delta = create_hamiltonian_sparse(params_input={"L":L, "J": J + ranH_J,
                                                                        "h": h + ranH_h})
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
@@ -475,8 +472,8 @@ class RandomizerHamiltonianRandomRandomDelta(Randomizer):
             dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
-        H_in_m = H_in - en_in[0] * sprs.eye(len(states))
-        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
+        H_in_m = H_in - en_in[0] * sprs.eye(2**L)
+        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(2**L)
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
@@ -522,7 +519,6 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         delta = [self.delta[0] * np.random.rand(1)[0], self.delta[1] * np.random.rand(1)[0],
                  self.delta[2] * np.random.rand(1)[0], self.delta[3] * np.random.rand(1)[0]]
         L = self.ham.L
-        states = self.ham.states
         h = self.ham.h
         J_onsite = self.ham.J_onsite
         J_nn = self.ham.J_nn
@@ -555,7 +551,7 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
         ranH_J_nnn = 1 / 2 * ranH_J_nnn.T @ ranH_J_nnn
         ranH_h = delta[3] * (np.random.rand(3) - 0.5)
 
-        H_plus_delta = self.ham.calculate_ham_sparse(L, states, h + ranH_h, J_onsite + ranH_J_onsite,
+        H_plus_delta = self.ham.calculate_ham_sparse(L, h + ranH_h, J_onsite + ranH_J_onsite,
                                                      J_nn + ranH_J_nn, J_nnn + ranH_J_nnn, bc=bc)
         if temp == 0:
             en_rand, gs = SijCalculator.find_gs_sparse(H_plus_delta)
@@ -587,8 +583,8 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
             dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())
             energy = (H_in @ state_in).trace() - (H_in @ state_rand).trace() 
 
-        H_in_m = H_in - en_in[0] * sprs.eye(len(states))
-        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(len(states))
+        H_in_m = H_in - en_in[0] * sprs.eye(2**L)
+        H_rand_m = H_plus_delta - en_rand[0] * sprs.eye(2**L)
         dist_ham = sprsla.norm(H_in_m / H_in_m.trace() - H_rand_m / H_rand_m.trace())
 
         if return_ham:
@@ -750,8 +746,8 @@ class RandomizerStateRandomDelta(RandomizerState):
         S_total = 0
         Sq_total = 0
         for corr_i in corr:
-        	S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
-        	Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
+            S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
+            Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
         Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
         #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
         dist = self.calculate_dist_overlap(state_in, state_rand)

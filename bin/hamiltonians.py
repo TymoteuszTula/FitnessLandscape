@@ -1,6 +1,6 @@
 # hamiltonians.py
 
-from exact_diagonalisation_code_sparse import create_states, create_hamiltonian_sparse
+from exact_diagonalisation_code_sparse import create_hamiltonian_sparse
 import numpy as np
 
 class Hamiltonian:
@@ -44,7 +44,7 @@ class NNHamiltonian(Hamiltonian):
 
         return J
 
-    def calculate_ham_sparse(self, L, states, h, J_onsite, J_nn, J_nnn, bc="infinite"):
+    def calculate_ham_sparse(self, L, h, J_onsite, J_nn, J_nnn, bc="infinite"):
 
         J = [[[] for i in range(L)] for j in range(L)]
         J_zero = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -69,11 +69,10 @@ class NNHamiltonian(Hamiltonian):
                         else:
                             J[i][j] = J_zero
 
-        return create_hamiltonian_sparse(states, params_input={"L": L, "J": J, "h": h})
+        return create_hamiltonian_sparse(params_input={"L": L, "J": J, "h": h})
 
     def __init__(self, L, h, J_onsite, J_nn, J_nnn, temp, bc="infinite"):
         self.L = L
-        self.states = create_states(L)
         self.h = h
         self.temp = temp
         self.bc = bc
@@ -88,13 +87,12 @@ class NNHamiltonian(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
 
 class GeneralHamiltonian(Hamiltonian):
 
     def __init__(self, L, h, J, temp, bc="infinite"):
         self.L = L
-        self.states = create_states(L)
         self.h = h
         self.temp = temp
         self.bc = bc
@@ -106,14 +104,13 @@ class GeneralHamiltonian(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
         
         
 class GeneralHamiltonianRandomUniform(Hamiltonian):
     """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution over -J_max .. J_max and the field strength drawn from a uniform distribution """
     def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
         self.L = L
-        self.states = create_states(L)
         self.temp = temp
         self.bc = bc
         # Randomly Initialise J:
@@ -154,14 +151,13 @@ class GeneralHamiltonianRandomUniform(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
 
 
 class GeneralHamiltonianRandomUniformOverallSign(Hamiltonian):
     """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution of maximum magnitude J_max with overall sign for each link and the field strength drawn from a normal distribution """
     def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
         self.L = L
-        self.states = create_states(L)
         self.temp = temp
         self.bc = bc
         # Randomly Initialise J:
@@ -202,13 +198,12 @@ class GeneralHamiltonianRandomUniformOverallSign(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
 
 class GeneralHamiltonianRandomNormal(Hamiltonian):
     """ Creates a Hamiltonian with long-range coupling drawn from a uniform distribution over -J_max .. J_max and the field strength drawn from a uniform distribution """
     def __init__(self, L, h_max_value, J_max_value, temp, bc="infinite"):
         self.L = L
-        self.states = create_states(L)
         self.temp = temp
         self.bc = bc
         # Randomly Initialise J:
@@ -249,13 +244,12 @@ class GeneralHamiltonianRandomNormal(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
 
 class RandomHamiltonianTI(Hamiltonian):
 
     def __init__(self, L, temp, bc="infinite", h=None, J=None, h_max=1, J_max=1):
         self.L = L
-        self.states = create_states(L)
         if h == None:
             self.h = [h_max * np.random.randn(3)]
         else:
@@ -275,5 +269,5 @@ class RandomHamiltonianTI(Hamiltonian):
 
     def get_init_ham(self):
         params = {"L": self.L, "J": self.J, "h": self.h}
-        return create_hamiltonian_sparse(self.states, params_input=params)
+        return create_hamiltonian_sparse(params_input=params)
 

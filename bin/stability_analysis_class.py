@@ -8,7 +8,7 @@ for both finite and zero temperature cases.
 # Imports
 
 from scipy import rand
-from exact_diagonalisation_code_sparse import create_states, create_hamiltonian_sparse
+from exact_diagonalisation_code_sparse import create_hamiltonian_sparse
 from exact_diagonalisation_code_sparse import create_sx_sparse, create_sy_sparse, create_sz_sparse
 from tools import SijCalculator
 from multiprocessing import Pool
@@ -215,13 +215,12 @@ class StabilityAnalysisSparse:
 			   number of random states to consider
         """
         
-        states = self.ham.states
         #H_in = calculate_ham_sparse(L, states, h, J_onsite, J_nn, J_nnn, bc)
         #H_in = create_hamiltonian_sparse(L, params_input={"L": self.L, "J": self.J, "h": self.h})
         H_in = self.ham.get_init_ham()
-        SX = create_sx_sparse(states, self.ham.L)
-        SY = create_sy_sparse(states, self.ham.L)
-        SZ = create_sz_sparse(states, self.ham.L)
+        SX = create_sx_sparse(self.ham.L)
+        SY = create_sy_sparse(self.ham.L)
+        SZ = create_sz_sparse(self.ham.L)
         # New lines
         CorrelationCalculator = SijCalculator(self.params)
         exp_fac = CorrelationCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
@@ -302,13 +301,12 @@ class StabilityAnalysisSparse:
 
         """
         
-        states = self.ham.states
         #H_in = calculate_ham_sparse(L, states, h, J_onsite, J_nn, J_nnn, bc)
         #H_in = create_hamiltonian_sparse(L, params_input={"L": self.L, "J": self.J, "h": self.h})
         H_in = self.ham.get_init_ham()
-        SX = create_sx_sparse(states, self.ham.L)
-        SY = create_sy_sparse(states, self.ham.L)
-        SZ = create_sz_sparse(states, self.ham.L)
+        SX = create_sx_sparse(self.ham.L)
+        SY = create_sy_sparse(self.ham.L)
+        SZ = create_sz_sparse(self.ham.L)
         CorrelationCalculator = SijCalculator(self.params)
         exp_fac = CorrelationCalculator.calculate_exp_fac(self.ham.L, self.no_qpoints)
         Lambdas = CorrelationCalculator.calculate_Lambdas(self.ham.L)
