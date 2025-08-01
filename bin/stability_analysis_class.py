@@ -8,8 +8,8 @@ for both finite and zero temperature cases.
 # Imports
 
 from scipy import rand
-from exact_diagonalisation_code_sparse import create_hamiltonian_sparse
-from exact_diagonalisation_code_sparse import create_sx_sparse, create_sy_sparse, create_sz_sparse
+from tools import create_hamiltonian_sparse
+from tools import create_sx_sparse, create_sy_sparse, create_sz_sparse
 from tools import SijCalculator
 from multiprocessing import Pool
 import numpy as np

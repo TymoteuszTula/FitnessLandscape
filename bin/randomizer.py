@@ -1,7 +1,7 @@
 # randomizer.py
 
 import numpy as np
-from exact_diagonalisation_code_sparse import create_hamiltonian_sparse
+from tools import create_hamiltonian_sparse
 from tools import SijCalculator
 from hamiltonians import NNHamiltonian
 import scipy.sparse as sprs
@@ -150,8 +150,8 @@ def SelectDensityMatrixSampler(elementdistribution, params=None):
 	return distrib
 		
 class Randomizer:
-    r"""Prototype of class designed to chose a randomization process to generate data for stability 
-    analysis."""
+    r"""Prototype of class designed to chose a randomization process to 
+    generate data for stability analysis."""
 
     def __init__(self):
         pass
@@ -801,10 +801,10 @@ class RandomizerStateRandomDelta(RandomizerState):
         Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
         dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
         if "H_in" in params:
-        	H_in = params["H_in"]
-        	energy = (H_in @ state_rand).trace()
+            H_in = params["H_in"]
+            energy = (H_in @ state_rand).trace()
         else:
-        	energy = 0.0
+            energy = 0.0
 
         return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
                     "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
