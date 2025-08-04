@@ -157,13 +157,17 @@ class Randomizer:
         pass
 
     def return_random_state(self):
-        """ This function should generate a random sample and then return the data for the generated instance of a random Hamiltonian.
+        """ This function should generate a random sample and then return the 
+        data for the generated instance of a random Hamiltonian.
         
-			By sample here, we mean, generating a random Hamiltonian in the type of models defined in each class.
+			By sample here, we mean, generating a random Hamiltonian in the 
+            type of models defined in each class.
 			
-			If the calculation is done for T=0, the code will generate S(q) for the ground state
-			If T!=0, then the code will generate the density matrix and generate the corresponding metric.
-			If T!=0, then the code will generate the density matrix and generate the corresponding metric.
+			If the calculation is done for T=0, the code will generate S(q) 
+            for the ground state If T!=0, then the code will generate the 
+            density matrix and generate the corresponding metric. If T!=0, 
+            then the code will generate the density matrix and generate the 
+            corresponding metric.
 		
 		(abstract interface routine to be implemented in derived classes) """
         pass
@@ -603,7 +607,8 @@ class RandomizerHamiltonianNNRandomDelta(Randomizer):
 	
 class RandomizerState(Randomizer):
     """ class for randomising state vectors around a target state
-        no further evolutions of this class have been implemented - for more advanced usage, see RandomizerStateRandomDelta, below.
+        no further evolutions of this class have been implemented - for more 
+        advanced usage, see RandomizerStateRandomDelta, below.
     """
     def __init__(self, ham, delta, no_of_processes):
         self.ham = ham
@@ -632,9 +637,13 @@ class RandomizerState(Randomizer):
         state_no = 2 ** L
 
         if temp == 0:
-            state_rand = state_in + delta * (np.random.rand(state_no) + 1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
-            state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, state_rand, SX, SY, SZ, temp, no_ofqpoints=100, exp_fac=exp_fac, Lambdas=Lambdas)
+            state_rand = state_in + delta * (np.random.rand(state_no) + 
+                         1j * np.random.rand(state_no) - 0.5 * (1 + 1j))
+            state_rand = (state_rand / 
+                          np.sqrt(np.sum(state_rand.conj() * state_rand)))
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2(L, 
+                            state_rand, SX, SY, SZ, temp, no_ofqpoints=100, 
+                            exp_fac=exp_fac, Lambdas=Lambdas)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
@@ -642,39 +651,49 @@ class RandomizerState(Randomizer):
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
             #dist = np.sum(np.abs(state_rand.conj() * state_in)**2)
             dist = self.calculate_dist_overlap(state_in, state_rand)
-            energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
+            energy = (state_rand[np.newaxis].conj() 
+                      @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
         else:
             # Here state_in must be dense
-            ranp = delta * (np.random.rand(state_no, state_no) - 0.5 + 1j * np.random.rand(state_no, state_no) -0.5j)
+            ranp = delta * (np.random.rand(state_no, state_no) - 0.5 + 1j * 
+                            np.random.rand(state_no, state_no) -0.5j)
             ranp = ranp.conj().T @ ranp
             state_rand = state_in + ranp
             state_rand = state_rand / np.trace(state_rand)
-            Sij_rand, Sq_rand = SijCalculator.return_Sq2_dm_not_sparse(L, state_rand, SX, SY, SZ, no_ofqpoints=100, )
+            Sij_rand, Sq_rand = SijCalculator.return_Sq2_dm_not_sparse(L, 
+                        state_rand, SX, SY, SZ, no_ofqpoints=100)
             S_total = 0
             Sq_total = 0
             for corr_i in corr:
                 S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
                 Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
-            dist = np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
+            dist = np.abs(((state_in - state_rand).conj().T @ 
+                           (state_in - state_rand)).trace())[0,0]
             energy = (H_in @ state_rand).trace()
 
-        return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand}
+        return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), 
+                "dist": dist, "energy": energy, "Sq_list": Sq_rand}
 
 class RandomizerStateRandomDelta(RandomizerState):
 
     def __init__(self, ham, delta_max, no_of_processes, distribution_type):
         """
 				Class to sample a random state in the vicinity of a given state
-				ham: Hamiltonian; alternatively, an object which provides the following fields:
+				ham: Hamiltonian; alternatively, an object which provides the 
+                following fields:
 				      - int 'L' for Length of chain
 				      - int 'dimension' for Hilbert-space dimension
 				      - float 'temp' for temperature
 				distribution_type: dict - important keys:
 				
-				'shape': allowed values are: 'uniformSquare', 'uniformCircle', 'normal'
-				'rhoMethod': defining the algorithm for sampling random density matrices, allowed values are: 'squareRandom', 'projectEigenvalues'
+				'shape': allowed values are: 'uniformSquare', 'uniformCircle', 
+                    'normal'
+				'rhoMethod': defining the algorithm for sampling random density
+                    matrices, allowed values are: 'squareRandom', 
+                    'projectEigenvalues'
 				'rhoParams': further parameters for dm generator
-				'scaleWithSize': flag indicating if scaling with Hilbert-space dimension should be considered
+				'scaleWithSize': flag indicating if scaling with Hilbert-space 
+                    dimension should be considered
 				
 		"""
         self.ham = ham
@@ -684,14 +703,19 @@ class RandomizerStateRandomDelta(RandomizerState):
         self.rand_delta = True
         print  ("Setting up RandomizerStateRandomDelta")
         if not 'shape' in distribution_type:
-            print("Please define the 'shape' of your distribution: 'uniformSquare', 'uniformCircle', or 'normal' ")
+            print("Please define the 'shape' of your distribution: " \
+            "'uniformSquare', 'uniformCircle', or 'normal' ")
             exit(1)
-        self.element_distribution = SelectElementDistribution(distribution_type['shape'])
+        self.element_distribution = SelectElementDistribution(
+             distribution_type['shape'])
         if ham.temp == 0.0:
             self.sampler = self._ZeroTemperatureSampler
         else:
             self.sampler = self._FiniteTemperatureSampler
-            self.dm_sampler = SelectDensityMatrixSampler(self.element_distribution, {'method': distribution_type['rhoMethod'], 'params': distribution_type['rhoParams']})
+            self.dm_sampler = SelectDensityMatrixSampler(
+                 self.element_distribution, {'method': 
+                                distribution_type['rhoMethod'], 
+                                'params': distribution_type['rhoParams']})
         if 'scaleWithSize' in distribution_type:
             if distribution_type['scaleWithSize']:
                 if ham.temp == 0.0:
@@ -709,18 +733,25 @@ class RandomizerStateRandomDelta(RandomizerState):
         return self.sampler(delta, params)
                     
     def _ZeroTemperatureSampler(self, delta, params):
-        """ draw a random sample for a pure state, and calculate its structure factor and other statistics against the given Hamiltonian
+        """ draw a random sample for a pure state, and calculate its structure 
+        factor and other statistics against the given Hamiltonian
 		
 		parameters: dict, containing fields:
 			state_in: input state
-			no_qpoints: number of points used to discretize BZ along each axis when calculating S(q)
+			no_qpoints: number of points used to discretize BZ along each axis 
+                when calculating S(q)
 			Sij_init: real-space correlator of input (target) state
 			Sq_init: structure factor for input (target) state
-			SX, SY, SZ: precalculated fields for input to SijCalculator.return_Sq2
-			exp_fac: precalculated Fourier factors for input to SijCalculator.return_Sq2
-			Lambdas: precalculated rotation matrices for input to SijCalculator.return_Sq2
-			Sq_int_in: sum of Sq over different pairs of spin components for input state
-			H_in: input Hamiltonian - if provided, this is used to calculate the difference in energy of random states being generated
+			SX, SY, SZ: precalculated fields for input to 
+                SijCalculator.return_Sq2
+			exp_fac: precalculated Fourier factors for input to 
+                SijCalculator.return_Sq2
+			Lambdas: precalculated rotation matrices for input to 
+                SijCalculator.return_Sq2
+			Sq_int_in: sum of Sq over different pairs of spin components for 
+                input state
+			H_in: input Hamiltonian - if provided, this is used to calculate 
+                the difference in energy of random states being generated
 			en_in: float, energy of input state, used only if H_in is provided
          """
         Sij_init = params["Sij_init"]
@@ -737,12 +768,15 @@ class RandomizerStateRandomDelta(RandomizerState):
         no_qpoints = params["no_qpoints"]
         state_no = len(state_in)
 
-        # draw random entries for each of the components of the state vector, and normalise it:
-        state_rand = state_in + self.element_distribution.get_random_elements(delta, state_no)
+        # draw random entries for each of the components of the state vector, 
+        # and normalise it:
+        state_rand = (state_in + 
+            self.element_distribution.get_random_elements(delta, state_no))
         state_rand = state_rand / np.sqrt(np.sum(state_rand.conj() * state_rand))
         
-        Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(self.ham.L, state_rand, SX, SY, SZ, self.ham.temp, no_ofqpoints=no_qpoints,
-                                                          exp_fac=exp_fac, Lambdas=Lambdas)
+        Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.return_Sq2(self.ham.L, 
+            state_rand, SX, SY, SZ, self.ham.temp, no_ofqpoints=no_qpoints,
+            exp_fac=exp_fac, Lambdas=Lambdas)
         S_total = 0
         Sq_total = 0
         for corr_i in corr:
@@ -753,27 +787,37 @@ class RandomizerStateRandomDelta(RandomizerState):
         dist = self.calculate_dist_overlap(state_in, state_rand)
         if "H_in" in params:
             H_in = params["H_in"]
-            energy = (state_rand[np.newaxis].conj() @ H_in @ state_rand[np.newaxis].T)[0,0] - en_in
+            energy = (state_rand[np.newaxis].conj() @ H_in @ 
+                      state_rand[np.newaxis].T)[0,0] - en_in
         else:
             energy = 0.0
-        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
-                    "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
+        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
+                "dist": dist, "energy": energy, "Sq_list": Sq_rand,
+                "Sij_list": Sij_rand, "Sq_int": Sq_int_total, 
+                "Sq_int_list": Sq_int_rand}
                     
              
     def _FiniteTemperatureSampler(self, delta, params):
         """ draw a random density matrix for the finite temperature case,
-			and calculate its structure factor and other statistics against the given Hamiltonian
+			and calculate its structure factor and other statistics against the
+            given Hamiltonian
 		
 		parameters: dict, containing fields:
 			state_in: input state
-			no_qpoints: number of points used to discretize BZ along each axis when calculating S(q)
+			no_qpoints: number of points used to discretize BZ along each axis 
+                when calculating S(q)
 			Sij_init: real-space correlator of input (target) state
 			Sq_init: structure factor for input (target) state
-			SX, SY, SZ: precalculated fields for input to SijCalculator.return_Sq2
-			exp_fac: precalculated Fourier factors for input to SijCalculator.return_Sq2
-			Lambdas: precalculated rotation matrices for input to SijCalculator.return_Sq2
-			Sq_int_in: sum of Sq over different pairs of spin components for input state
-			H_in: input Hamiltonian - if provided, this is used to calculate the difference in energy of random states being generated
+			SX, SY, SZ: precalculated fields for input to 
+                SijCalculator.return_Sq2
+			exp_fac: precalculated Fourier factors for input to 
+                SijCalculator.return_Sq2
+			Lambdas: precalculated rotation matrices for input to 
+                SijCalculator.return_Sq2
+			Sq_int_in: sum of Sq over different pairs of spin components for 
+                input state
+			H_in: input Hamiltonian - if provided, this is used to calculate 
+                the difference in energy of random states being generated
 			en_in: float, energy of input state, used only if H_in is provided
          """
 
@@ -789,23 +833,30 @@ class RandomizerStateRandomDelta(RandomizerState):
         exp_fac = params["exp_fac"]
         Lambdas = params["Lambdas"]
         Sq_int_in = params["Sq_int_in"]
-        no_qpoints = params["no_qpoints"]	            # Here state_in must be dense
-        # generation of actual random density matrix is contracted out to generator object:
+        no_qpoints = params["no_qpoints"]	            
+        # Here state_in must be dense generation of actual random density 
+        # matrix is contracted out to generator object:
         state_rand = self.dm_sampler.get_density_matrix(state_in, delta)
-        Sij_rand, Sq_rand, Sq_int_rand = SijCalculator.returnSq2_dm_not_sparse(self.ham.L, state_rand, SX, SY, SZ,                 				no_ofqpoints=no_qpoints, exp_fac=exp_fac, Lambdas=Lambdas)
+        Sij_rand, Sq_rand, Sq_int_rand = (
+            SijCalculator.returnSq2_dm_not_sparse(self.ham.L, state_rand, 
+                SX, SY, SZ, no_ofqpoints=no_qpoints, exp_fac=exp_fac, 
+                Lambdas=Lambdas))
         S_total = 0
         Sq_total = 0
         for corr_i in corr:
             S_total += np.sum(np.abs(Sij_init[corr_i] - Sij_rand[corr_i])**2)
             Sq_total += np.sum(np.abs(Sq_init[corr_i] - Sq_rand[corr_i])**2)
         Sq_int_total = np.sum(np.abs(Sq_int_in - Sq_int_rand)**2)
-        dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ (state_in - state_rand)).trace())[0,0]
+        dist = 1/2 * np.abs(((state_in - state_rand).conj().T @ 
+                             (state_in - state_rand)).trace())[0,0]
         if "H_in" in params:
             H_in = params["H_in"]
             energy = (H_in @ state_rand).trace()
         else:
             energy = 0.0
 
-        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), "dist": dist, "energy": energy, "Sq_list": Sq_rand,
-                    "Sij_list": Sij_rand, "Sq_int": Sq_int_total, "Sq_int_list": Sq_int_rand}
+        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
+                "dist": dist, "energy": energy, "Sq_list": Sq_rand, 
+                "Sij_list": Sij_rand, "Sq_int": Sq_int_total, 
+                "Sq_int_list": Sq_int_rand}
  

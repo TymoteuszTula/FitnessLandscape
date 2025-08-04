@@ -53,7 +53,11 @@ class NNHamiltonian(Hamiltonian):
         self.J_nnn = J_nnn
 
     def calculate_ham_sparse_in(self, L, J_onsite, J_nn, J_nnn, bc="infinite"):
-
+        r""" Calculate and return the values of the nearest-neighbour
+        Hamiltonian from given parameters - J_onsite, J_nn and J_nnn. These 
+        correspond respectively to the onsite, nearest-neighbour and 
+        next-nearest-neighbour interactions. This method returns just the 
+        interaction matrix J."""
         J = [[[] for i in range(L)] for j in range(L)]
         J_zero = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
@@ -80,31 +84,14 @@ class NNHamiltonian(Hamiltonian):
         return J
     
     def calculate_ham_sparse(self, L, h, J_onsite, J_nn, J_nnn, bc="infinite"):
+        r""" Calculate and return the values of the nearest-neighbour
+        Hamiltonian from given parameters - J_onsite, J_nn and J_nnn. These 
+        correspond respectively to the onsite, nearest-neighbour and 
+        next-nearest-neighbour interactions. This method returns full 
+        Hamiltonian in sparse format."""
+        J = self.calculate_ham_sparse_in(L, J_onsite, J_nn, J_nnn, bc)
 
-        J = [[[] for i in range(L)] for j in range(L)]
-        J_zero = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-
-        for i in range(L):
-            for j in range(L):
-                if i == j:
-                    J[i][j] = J_onsite
-                else:
-                    if bc == 'finite':
-                        if abs(i - j) == 1:
-                            J[i][j] = J_nn
-                        elif abs(i - j) == 2:
-                            J[i][j] = J_nnn
-                        else:
-                            J[i][j] = J_zero
-                    elif bc == "infinite":
-                        if min(abs(i - j), abs(L + i - j), abs(L - i + j)) == 1:
-                            J[i][j] = J_nn
-                        elif min(abs(i - j), abs(L + i - j), abs(L - i + j)) == 2:
-                            J[i][j] = J_nnn
-                        else:
-                            J[i][j] = J_zero
-
-        params = {"L": self.L, "J": self.J, "h": self.h}
+        params = {"L": self.L, "J": J, "h": self.h}
         return create_hamiltonian_sparse(params_input=params)
 
     def get_dimension(self):
