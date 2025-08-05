@@ -10,26 +10,31 @@ from math import sqrt
 
 
 class AbstractElementDistribution:
-	"""Abstract base class defining interface for distributions generating elements for the density matrix / ground state"""
+	"""Abstract base class defining interface for distributions generating 
+    elements for the density matrix / ground state"""
 	def __init__(self):
 		pass
 	def get_random_elements(self, delta, shape):
-		""" this method implements the call to the relevant distribution, returning a vector of corresponding random numbers of given shape
+		""" this method implements the call to the relevant distribution, 
+            returning a vector of corresponding random numbers of given shape
 		shape: tuple
 			dimensions of the required array of random numbers"""
 		pass
 		
 class ComplexUniformDistributionSquare(AbstractElementDistribution):
-	"""implementing a complex distribution which generates complex numbers in the square spanning -delta/2 .. delta/2 along the real and imaginary coordinate axis"""
+	"""implementing a complex distribution which generates complex numbers in 
+    the square spanning -delta/2 .. delta/2 along the real and imaginary 
+    coordinate axis"""
 	def __init__(self):
 		print ("Using ComplexUniformDistributionSquare", flush=True)
 		pass
 	def get_random_elements(self, delta, shape):
 		""" this method implements the call to the relevant distribution"""
-		return delta * (np.random.rand(*shape) - 0.5 + 1j * np.random.rand(*shape) -0.5j)
+		return delta * (np.random.rand(shape) - 0.5 + 1j * np.random.rand(shape) -0.5j)
 
 class ComplexUniformDistributionCircle(AbstractElementDistribution):
-	"""implementing a complex distribution which generates complex numbers in the circle of radius delta """
+	"""implementing a complex distribution which generates complex numbers in 
+    the circle of radius delta """
 	def __init__(self):
 		print ("Using ComplexUniformDistributionCircle", flush=True)
 		pass
@@ -51,7 +56,8 @@ class ComplexNormalDistribution(AbstractElementDistribution):
 		pass
 	def get_random_elements(self, delta, shape):
 		""" this method implements the call to the relevant distribution"""
-		return np.random.normal(loc=0.0, scale=delta, size=shape) + 1j * np.random.normal(loc=0.0, scale=delta, size=shape)
+		return (np.random.normal(loc=0.0, scale=delta, size=shape) + 1j * 
+                np.random.normal(loc=0.0, scale=delta, size=shape))
 		
 		
 def SelectElementDistribution(shape):
@@ -66,41 +72,51 @@ def SelectElementDistribution(shape):
 	elif(shape== 'normal'):
 		elementdistribution = ComplexNormalDistribution()
 	else:
-		print("Unknown 'shape' of distribution, please select from: 'uniformSquare', 'uniformCircle', or 'normal' ")
+		print("Unknown 'shape' of distribution, please select from: " \
+        "'uniformSquare', 'uniformCircle', or 'normal' ")
 		exit(1)
 
 	return elementdistribution
 	
 	
 class AbstractDensityMatrixDistribution:
-	"""Abstract base class defining interface for distributions of density matrices"""
+	"""Abstract base class defining interface for distributions of density 
+    matrices"""
 	def __init__(self):
 		pass
 	def get_density_matrix(self, reference_rho, delta):
-		""" this method generates a variation around a reference density matric reference_rho, with deviation parameter delta
+		""" this method generates a variation around a reference density 
+        matrix reference_rho, with deviation parameter delta
 		
 			  reference_rho: np.array
-			  delta: magnitude of deviation (implementation left to derived classes)
+			  delta: magnitude of deviation (implementation left to derived 
+              classes)
 		"""
 		pass
 		
 		
 class RSquaredDensityMatrixDistribution(AbstractDensityMatrixDistribution):
-	"""Distributions of random density matrices using deviations in form of squares of random matrices"""
+	"""Distributions of random density matrices using deviations in form of 
+    squares of random matrices"""
 	def __init__(self, elementdistribution):
 		self.elementdistribution = elementdistribution
 	def get_density_matrix(self, reference_rho, delta):
-		""" this method generates a variation around a reference density matric reference_rho, with deviation parameter delta
+		""" this method generates a variation around a reference density 
+        matrix reference_rho, with deviation parameter delta
 			reference_rho: np.array
-			delta: magnitude of deviation - deviation parameter passed to element distribution
+			delta: magnitude of deviation - deviation parameter passed to 
+            element distribution
 		"""
-		ranp = self.elementdistribution.get_random_elements(delta, reference_rho.shape)
+		ranp = self.elementdistribution.get_random_elements(delta, 
+                                                      reference_rho.shape)
 		ranp = ranp.conj().T @ ranp
 		rho_rand = reference_rho + ranp
 		return rho_rand / np.trace(rho_rand)
 		
 class ProjectedDensityMatrixDistribution(AbstractDensityMatrixDistribution):
-	"""Distributions of random density matrices generating deviations satisfying the constraints from eliminating negative eigenvalues in the eigenbasis"""
+	"""Distributions of random density matrices generating deviations 
+    satisfying the constraints from eliminating negative eigenvalues in the 
+    eigenbasis"""
 	def __init__(self, elementdistribution, params=None):
 		self.elementdistribution = elementdistribution
 		if (params is not None ) and ('min_ev' in params):
@@ -109,11 +125,14 @@ class ProjectedDensityMatrixDistribution(AbstractDensityMatrixDistribution):
 			self.min_ev=0.0
 		
 	def get_density_matrix(self, reference_rho, delta):
-		""" this method generates a variation around a reference density matric reference_rho, with deviation parameter delta
+		""" this method generates a variation around a reference density matrix
+        reference_rho, with deviation parameter delta
 			reference_rho: np.array
-			delta: magnitude of deviation - deviation parameter passed to element distribution
+			delta: magnitude of deviation - deviation parameter passed to 
+            element distribution
 		"""
-		ranp = self.elementdistribution.get_random_elements(delta, reference_rho.shape)
+		ranp = self.elementdistribution.get_random_elements(delta, 
+                                                      reference_rho.shape)
 		ranp = 0.5*(ranp.conj().T + ranp)
 		    
 		rho_rand = reference_rho + ranp
@@ -130,22 +149,26 @@ class ProjectedDensityMatrixDistribution(AbstractDensityMatrixDistribution):
 		
 		
 def SelectDensityMatrixSampler(elementdistribution, params=None):
-	""" select a method to generate a positive definite and trace 1 matrix that forms a valid density matrix:
-		params : dict - defining parameters of the distribution, important keywords are
+	""" select a method to generate a positive definite and trace 1 matrix that
+    forms a valid density matrix:
+		params : dict - defining parameters of the distribution, important 
+        keywords are
 		    'method' : string
 			   allowed values: 'squareRandom', 'projectEigenvalues'
 		elementdistribution : AbstractElementDistribution
 		    pointer to the distribution to be used for individual elements
 	"""
 	if not 'method' in params:
-		print("Please define the 'method' of density matrix sampler for finite T calculations, choosing from: squareRandom', 'projectEigenvalues' ")
+		print("Please define the 'method' of density matrix sampler for finite " \
+        "T calculations, choosing from: squareRandom', 'projectEigenvalues' ")
 	method = params['method']
 	if (method== 'squareRandom'):
 		distrib = RSquaredDensityMatrixDistribution(elementdistribution)
 	elif(method=='projectEigenvalues'):
 		distrib = ProjectedDensityMatrixDistribution(elementdistribution, params)
 	else:
-		print("Unknown 'method' for generating density matrices. Please select from: 'squareRandom', 'projectEigenvalues' ")
+		print("Unknown 'method' for generating density matrices. " \
+        "Please select from: 'squareRandom', 'projectEigenvalues' ")
 
 	return distrib
 		
@@ -180,11 +203,13 @@ class Randomizer:
         return dist
 
 class RandomizerHamiltonianNN(Randomizer):
-    """ class to create random instances of NN Hamiltonians, but modulating the total magnitude o
-        the randomness with an extra uniform distribution; this yields a uniform distribution of
-        given widths for different coupling parameters around the reference Hamiltonian """
+    """ class to create random instances of NN Hamiltonians, but modulating the
+    total magnitude of the randomness with an extra uniform distribution; this 
+    yields a uniform distribution of given widths for different coupling 
+    parameters around the reference Hamiltonian """
     def __init__(self, ham, delta, no_of_processes):
-        """ create an object to generate a sequence of NN Hamiltonian with parameters as follows
+        """ create an object to generate a sequence of NN Hamiltonian with 
+        parameters as follows
 			ham: instance of the reference Hamiltonian
 			
 			delta: array of widths of random distributions (uniform) for:
@@ -199,9 +224,11 @@ class RandomizerHamiltonianNN(Randomizer):
         self.ham = ham#
         print("Using RandomizerHamiltonianNN")
         if not isinstance(delta, list):
-            raise ValueError("If change in Hamiltonian, delta has to be a list of 4 elements")
+            raise ValueError("If change in Hamiltonian, delta has to be a list" \
+            " of 4 elements")
         elif len(delta) != 4:
-            raise ValueError("If change in Hamiltonian, delta has to be a list of 4 elements")
+            raise ValueError("If change in Hamiltonian, delta has to be a list " \
+            "of 4 elements")
         self.delta = delta
         self.no_of_processes = no_of_processes
         self.rand_ham = True
@@ -633,6 +660,8 @@ class RandomizerState(Randomizer):
         corr = params["corr"]
         H_in = params["H_in"]
         en_in = params["en_in"]
+        exp_fac = params["exp_fac"]
+        Lambdas = params["Lambdas"]
 
         state_no = 2 ** L
 
@@ -676,7 +705,7 @@ class RandomizerState(Randomizer):
 
 class RandomizerStateRandomDelta(RandomizerState):
 
-    def __init__(self, ham, delta_max, no_of_processes, distribution_type):
+    def __init__(self, ham, delta, no_of_processes, distribution_type):
         """
 				Class to sample a random state in the vicinity of a given state
 				ham: Hamiltonian; alternatively, an object which provides the 
@@ -697,7 +726,7 @@ class RandomizerStateRandomDelta(RandomizerState):
 				
 		"""
         self.ham = ham
-        self.delta_max = delta_max
+        self.delta = delta
         self.no_of_processes = no_of_processes
         self.rand_ham = False
         self.rand_delta = True
@@ -719,9 +748,9 @@ class RandomizerStateRandomDelta(RandomizerState):
         if 'scaleWithSize' in distribution_type:
             if distribution_type['scaleWithSize']:
                 if ham.temp == 0.0:
-                    self.delta_max *= self.ham.get_dimension()**(-0.5)
+                    self.delta *= self.ham.get_dimension()**(-0.5)
                 else:
-                    self.delta_max *= self.ham.get_dimension()**(-0.25)
+                    self.delta *= self.ham.get_dimension()**(-0.25)
 
     def return_random_state(self, params):
         """ see also documentation for super().return_random_state()
@@ -729,7 +758,7 @@ class RandomizerStateRandomDelta(RandomizerState):
 				description of reference system.
         """
         # super().return_random_state()
-        delta = self.delta_max * np.random.rand(1)[0]
+        delta = self.delta * np.random.rand(1)[0]
         return self.sampler(delta, params)
                     
     def _ZeroTemperatureSampler(self, delta, params):
@@ -859,4 +888,3 @@ class RandomizerStateRandomDelta(RandomizerState):
                 "dist": dist, "energy": energy, "Sq_list": Sq_rand, 
                 "Sij_list": Sij_rand, "Sq_int": Sq_int_total, 
                 "Sq_int_list": Sq_int_rand}
- 

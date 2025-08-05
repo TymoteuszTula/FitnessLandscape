@@ -93,16 +93,59 @@ def run_and_save_RandRandState():
     print("Run time for NNHamNNRand: " + str(stabAn.time[0]))
     stabAn.save_random_samples('./test_runs/', 'test_0.pickle')
 
+def run_and_save_RandRandDeltaState():
+    L = 6
+    h = [[0, 0, 0]]
+    J_onsite = np.zeros((3, 3))
+    J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    J_nnn = np.zeros((3, 3))
+    temp = 0
+    
+    ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp)
+    delta = 1
+    no_of_processes = 4
+
+    distribution_type = {"shape": "uniformSquare", "rhoMethod": "squareRandom",
+                         "scaleWithSize": True}
+
+    randomizer = RandomizerStateRandomDelta(ham, delta, no_of_processes,
+                                            distribution_type)
+    stabAn = StabilityAnalysisSparse(ham, randomizer, corr)
+    stabAn.run(50)
+    print("Run time for RandRandDeltaState: " + str(stabAn.time[0]))
+    stabAn.save_random_samples('./test_runs/', 'test_1.pickle')
+
+def load_RandRandDeltaState():
+    L = 6
+    h = [[0, 0, 0]]
+    J_onsite = np.zeros((3, 3))
+    J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    J_nnn = np.zeros((3, 3))
+    temp = 0
+    
+    ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp)
+    delta = 1
+    no_of_processes = 4
+
+    distribution_type = {"shape": "uniformSquare", "rhoMethod": "squareRandom"}
+
+    randomizer = RandomizerStateRandomDelta(ham, delta, no_of_processes,
+                                            distribution_type)
+    stabAn = StabilityAnalysisSparse(ham, randomizer, corr)
+
+    data = stabAn.load_random_samples("./test_runs/", 'test_1.pickle')
+    print(data['Sq_int'])
+
 
 
 if __name__ == "__main__":
 
-    case = 1
+    case = 4
 
     if case == 0:
 
-        run_NNHamRandNN()
-        run_NNHamRandRand()
+        #run_NNHamRandNN()
+        #run_NNHamRandRand()
         run_NNHamRandState()
 
         #run_RandRandNN()
@@ -165,6 +208,14 @@ if __name__ == "__main__":
     if case == 2:
 
         L = 6
+
+    if case == 3:
+
+        run_and_save_RandRandDeltaState()
+
+    if case == 4:
+
+        load_RandRandDeltaState()
 
 
 

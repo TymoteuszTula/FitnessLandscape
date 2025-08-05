@@ -206,7 +206,8 @@ class SijCalculator:
         pass
 
     def qhat(q1, q2):
-        """ calculate the norm vector along the direction of the given x and y components"""
+        """ calculate the norm vector along the direction of the given x and y 
+        components"""
         if (q1==0 and q2==0):
             return (0,0)
         else:
@@ -224,7 +225,8 @@ class SijCalculator:
         jp = np.repeat(jp[np.newaxis].T, L, axis=1)
 
         imj = np.repeat((ip-jp)[np.newaxis], no_ofqpoints, axis=0)
-        k_tile = np.transpose(np.tile(np.linspace(0, 2*pi, no_ofqpoints), (L, L, 1)), (2, 0, 1))
+        k_tile = np.transpose(np.tile(np.linspace(0, 2*pi, no_ofqpoints), 
+                                      (L, L, 1)), (2, 0, 1))
 
         exp_fac = np.exp(1j * imj * k_tile)
 
@@ -247,7 +249,8 @@ class SijCalculator:
         return a / sqrt(2. * (1.-cos(theta_n)))
 
     def returnLambdaMatrices(self, L):
-        """ calculate matrices that indicate the direction of rotation of individual spin axes"""
+        """ calculate matrices that indicate the direction of rotation of 
+        individual spin axes"""
 		
         if (self.geometry=="ring"):
 
@@ -267,7 +270,8 @@ class SijCalculator:
         return Lambdas
 
     def calculate_Sq_2d(L, Sij, no_ofqpoints=100):
-        """ calculate the structure factor Sij in real space, for a ring or chain of length L, as requested in the constructor """
+        """ calculate the structure factor Sij in real space, for a ring or 
+        chain of length L, as requested in the constructor """
         Sq = {}
         Rs = []
         a = 1
@@ -278,7 +282,8 @@ class SijCalculator:
 
             theta_range = np.arange(theta_diff, 2*pi+theta_diff/2, theta_diff)
 
-            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+            Rs = np.array([p * np.array([cos(theta_range[i]), 
+                                sin(theta_range[i])]) for i in range(L)])
         elif (self.geometry=="line"):
             Rs = np.array([np.array([i, 0.0]) for i in range(L)])
         else:
@@ -303,7 +308,8 @@ class SijCalculator:
         k_tile_y = np.transpose(np.tile(ky, (L, L, 1)), (2, 0, 1))
 
         exp_fac_x = np.exp(1j * imj_x * k_tile_x)
-        exp_fac_x = np.transpose(np.repeat(exp_fac_x[np.newaxis], no_ofqpoints, axis=0), (1, 0, 2, 3))
+        exp_fac_x = np.transpose(np.repeat(exp_fac_x[np.newaxis], no_ofqpoints,
+                                            axis=0), (1, 0, 2, 3))
 
         exp_fac_y = np.exp(1j * imj_y * k_tile_y)
         exp_fac_y = np.repeat(exp_fac_y[np.newaxis], no_ofqpoints, axis=0)
@@ -356,9 +362,11 @@ class SijCalculator:
 			# differences between angles
             theta_diff = 2 * pi/L
 
-            theta_range = np.arange((pi-theta_diff)/2, -3*pi/2-theta_diff/2, -theta_diff)
+            theta_range = np.arange((pi-theta_diff)/2, -3*pi/2-theta_diff/2, 
+                                    -theta_diff)
 			# actual positions
-            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+            Rs = np.array([p * np.array([cos(theta_range[i]), 
+                                         sin(theta_range[i])]) for i in range(L)])
         elif (self.geometry=="line"):
             Rs = np.array([np.array([i*a, 0.0]) for i in range(L)])
         else:
@@ -368,7 +376,8 @@ class SijCalculator:
         Rxs = Rs[:,0]
         Rys = Rs[:,1]
 		
-		# choose some range of momenta to look at (in general we could include some multiplier for overall range):
+		# choose some range of momenta to look at (in general we could include 
+        # some multiplier for overall range):
         kx = np.linspace(-2*pi, 2*pi, no_ofqpoints)
         ky = np.linspace(-2*pi, 2*pi, no_ofqpoints)
 
@@ -386,7 +395,8 @@ class SijCalculator:
         k_tile_y = np.transpose(np.tile(ky, (L, L, 1)), (2, 0, 1))
 
         exp_fac_x = np.exp(1j * imj_x * k_tile_x)
-        exp_fac_x = np.transpose(np.repeat(exp_fac_x[np.newaxis], no_ofqpoints, axis=0), (1, 0, 2, 3))
+        exp_fac_x = np.transpose(np.repeat(exp_fac_x[np.newaxis], no_ofqpoints, 
+                                           axis=0), (1, 0, 2, 3))
 
         exp_fac_y = np.exp(1j * imj_y * k_tile_y)
         exp_fac_y = np.repeat(exp_fac_y[np.newaxis], no_ofqpoints, axis=0)
@@ -408,13 +418,13 @@ class SijCalculator:
 
             theta_range = np.arange(theta_diff/2, -2*pi-theta_diff/2, -theta_diff)
 
-            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) for i in range(L)])
+            Rs = np.array([p * np.array([cos(theta_range[i]), sin(theta_range[i])]) 
+                           for i in range(L)])
         elif (self.geometry=="line"):
             Rs = np.array([np.array([i*a, 0.0]) for i in range(L)])
         else:
             print("Unknown choice of geometry for SijCalculator")
             sys.exit()
-
         
         exp_fac = np.zeros((no_ofqpoints, no_ofqpoints, L, L), dtype=complex)
 
@@ -429,9 +439,7 @@ class SijCalculator:
                                qy_j * (Rs[s][1] - Rs[r][1]))
                         exp_fac[i,j,s,r] = exp(1j * vec)
 
-
         return exp_fac  
-
 
     def calculate_Lambdas(self, L):
         
@@ -440,12 +448,17 @@ class SijCalculator:
         return Lambdas
 
     def calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas):
-        """ calculate the structure factor on a discrete grid of points in momentum space
+        """ calculate the structure factor on a discrete grid of points in 
+        momentum space
+
 		 parameters:
 		  L - int, chain length
-		  Sij - dictionary, with arrays of real-space correlated, labeled by spin-spin components 'Sxx', 'Sxy', ..., 'Szz'
-		  no_ofqpoints - int, number of points to discretise the BZ along each dimension
-		  exp_fac - matrix containing Fourier factors realising transform from r to q space
+		  Sij - dictionary, with arrays of real-space correlated, labeled by 
+          spin-spin components 'Sxx', 'Sxy', ..., 'Szz'
+		  no_ofqpoints - int, number of points to discretise the BZ along each 
+          dimension
+		  exp_fac - matrix containing Fourier factors realising transform from 
+          r to q space
 		  Lambdas - rotation matrices
         """
         Sq = {}
@@ -466,18 +479,6 @@ class SijCalculator:
                    "Szx": [[Sij_trans[i][j][2][0] for i in range(L)] for j in range(L)], 
                    "Szy": [[Sij_trans[i][j][2][1] for i in range(L)] for j in range(L)],
                    "Szz": [[Sij_trans[i][j][2][2] for i in range(L)] for j in range(L)]}
-
-        # Sq["Sxx"] = np.tensordot(exp_fac, Sij_new["Sxx"]) / L
-        # Sq["Sxy"] = np.tensordot(exp_fac, Sij_new["Sxy"]) / L
-        # Sq["Sxz"] = np.tensordot(exp_fac, Sij_new["Sxz"]) / L
-
-        # Sq["Syx"] = np.tensordot(exp_fac, Sij_new["Syx"]) / L
-        # Sq["Syy"] = np.tensordot(exp_fac, Sij_new["Syy"]) / L
-        # Sq["Syz"] = np.tensordot(exp_fac, Sij_new["Syz"]) / L
-
-        # Sq["Szx"] = np.tensordot(exp_fac, Sij_new["Szx"]) / L
-        # Sq["Szy"] = np.tensordot(exp_fac, Sij_new["Szy"]) / L
-        # Sq["Szz"] = np.tensordot(exp_fac, Sij_new["Szz"]) / L
 
         Sq["Sxx"] = np.tensordot(exp_fac, Sij_new["Sxx"]) / L
         Sq["Sxy"] = np.tensordot(exp_fac, Sij_new["Sxy"]) / L
@@ -512,7 +513,6 @@ class SijCalculator:
 
         return Sq, Sq_int
 
-
     def transform_correlations(L, i, j, Sij, Rs, thetas):
 
         Sij_mat = np.array([[Sij["Sxx"][i][j], Sij["Sxy"][i][j], Sij["Sxz"][i][j]],
@@ -540,7 +540,8 @@ class SijCalculator:
         Sq["Sxy"] = np.zeros((no_ofqpoints, no_ofqpoints))
         Sq["Syx"] = np.zeros((no_ofqpoints, no_ofqpoints))
 
-        # Function that given i,j L and Sij, transforms it into relevant correlations
+        # Function that given i,j L and Sij, transforms it into relevant 
+        # correlations
         
         a = 1
         p = SijCalculator.get_radius(L, a)
@@ -564,15 +565,19 @@ class SijCalculator:
                     for deltap in range(L):
                         pass
 
-
-
     def return_Sij(L, dm, SX, SY, SZ, temp):
         if temp == 0:
             gs2 = dm[np.newaxis]
 
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-                "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-                "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             for i in range(L):
                 for j in range(L):
@@ -590,9 +595,15 @@ class SijCalculator:
 
             return Sij
         else:
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-            "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-            "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             for i in range(L):
                 for j in range(L):
@@ -617,9 +628,15 @@ class SijCalculator:
         if temp == 0:
             gs2 = dm[np.newaxis]
 
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-                "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-                "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             Sq = {}
 
@@ -655,9 +672,15 @@ class SijCalculator:
 
             return Sij, Sq
         else:
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-            "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-            "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             Sq = {}
 
@@ -695,12 +718,17 @@ class SijCalculator:
 
             return Sij, Sq
 
-
     def return_Sij_dm_not_sparse(L, dm, SX, SY, SZ):
 
-        Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-        "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-        "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+        Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+               "Sxy": np.zeros((L, L), dtype=complex), 
+               "Sxz": np.zeros((L, L), dtype=complex),
+               "Syx": np.zeros((L, L), dtype=complex), 
+               "Syy": np.zeros((L, L), dtype=complex), 
+               "Syz": np.zeros((L, L), dtype=complex),
+               "Szx": np.zeros((L, L), dtype=complex), 
+               "Szy": np.zeros((L, L), dtype=complex), 
+               "Szz": np.zeros((L, L), dtype=complex)}
 
         for i in range(L):
             for j in range(L):
@@ -722,9 +750,15 @@ class SijCalculator:
 
     def return_SijSq_dm_not_sparse(L, dm, SX, SY, SZ):
 
-        Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-        "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-        "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+        Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+               "Sxy": np.zeros((L, L), dtype=complex), 
+               "Sxz": np.zeros((L, L), dtype=complex),
+               "Syx": np.zeros((L, L), dtype=complex), 
+               "Syy": np.zeros((L, L), dtype=complex), 
+               "Syz": np.zeros((L, L), dtype=complex),
+               "Szx": np.zeros((L, L), dtype=complex), 
+               "Szy": np.zeros((L, L), dtype=complex), 
+               "Szz": np.zeros((L, L), dtype=complex)}
         
         Sq = {}
 
@@ -766,9 +800,15 @@ class SijCalculator:
         if temp == 0:
             gs2 = dm[np.newaxis]
 
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-                "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-                "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             for i in range(L):
                 for j in range(L):
@@ -785,13 +825,20 @@ class SijCalculator:
                     Sij["Szz"][i, j] = (gs2.conj() @ SZ[i] @ SZ[j] @ gs2.T)[0,0]
 
                     
-            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
+            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, 
+                                        no_ofqpoints, exp_fac, Lambdas)
 
             return Sij, Sq, Sq_int
         else:
-            Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-            "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-            "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+            Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+                   "Sxy": np.zeros((L, L), dtype=complex), 
+                   "Sxz": np.zeros((L, L), dtype=complex),
+                   "Syx": np.zeros((L, L), dtype=complex), 
+                   "Syy": np.zeros((L, L), dtype=complex), 
+                   "Syz": np.zeros((L, L), dtype=complex),
+                   "Szx": np.zeros((L, L), dtype=complex), 
+                   "Szy": np.zeros((L, L), dtype=complex), 
+                   "Szz": np.zeros((L, L), dtype=complex)}
 
             Sq = {}
 
@@ -826,14 +873,21 @@ class SijCalculator:
 
             #Sq = SijCalculator.calculate_Sq_2d(L, Sij)
 
-            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
+            Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, 
+                                no_ofqpoints, exp_fac, Lambdas)
 
             return Sij, Sq, Sq_int
 
     def returnSq2_dm_not_sparse(L, dm, SX, SY, SZ, no_ofqpoints, exp_fac, Lambdas):
-        Sij = {"Sxx": np.zeros((L, L), dtype=complex), "Sxy": np.zeros((L, L), dtype=complex), "Sxz": np.zeros((L, L), dtype=complex),
-        "Syx": np.zeros((L, L), dtype=complex), "Syy": np.zeros((L, L), dtype=complex), "Syz": np.zeros((L, L), dtype=complex),
-        "Szx": np.zeros((L, L), dtype=complex), "Szy": np.zeros((L, L), dtype=complex), "Szz": np.zeros((L, L), dtype=complex)}
+        Sij = {"Sxx": np.zeros((L, L), dtype=complex), 
+               "Sxy": np.zeros((L, L), dtype=complex), 
+               "Sxz": np.zeros((L, L), dtype=complex),
+               "Syx": np.zeros((L, L), dtype=complex), 
+               "Syy": np.zeros((L, L), dtype=complex), 
+               "Syz": np.zeros((L, L), dtype=complex),
+               "Szx": np.zeros((L, L), dtype=complex), 
+               "Szy": np.zeros((L, L), dtype=complex),
+               "Szz": np.zeros((L, L), dtype=complex)}
         
         Sq = {}
 
@@ -857,10 +911,10 @@ class SijCalculator:
                 Sij["Szz"][i, j] = np.trace(dm @ SZ[i] @ SZ[j])/ dm_trace
 
 
-        Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, no_ofqpoints, exp_fac, Lambdas)
+        Sq, Sq_int = SijCalculator.calculate_Sq_2d_with_int(L, Sij, 
+                        no_ofqpoints, exp_fac, Lambdas)
 
         return Sij, Sq, Sq_int
-
         
     def find_gs_sparse(ham):
         return sprsla.eigsh(ham, 1, which="SA")
@@ -902,7 +956,8 @@ class SijCalculator:
         # if np.isnan(trexp):
         #     print("not correct")
 
-        # state = eigvecs @ np.diag(np.exp(-beta * eigvals) / trexp) @ eigvecs.conj().T
+        # state = eigvecs @ np.diag(np.exp(-beta * eigvals) / trexp) @ 
+        # eigvecs.conj().T
 
         m = np.max(eigvals)
         logTr = m + np.log(np.sum(np.exp(eigvals-m)))
