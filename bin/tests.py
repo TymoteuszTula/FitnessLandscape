@@ -6,6 +6,8 @@ from randomizer import RandomizerStateRandomDelta
 from stability_analysis_class import StabilityAnalysisSparse
 import numpy as np
 import matplotlib.pyplot as plt
+from tools import dist_S
+from hamiltonians import GeneralHamiltonianRandomUniform
 
 corr = ["Sxx", "Sxy", "Sxz", "Syx", "Syy", "Syz", "Szx", "Szy", "Szz"]
 
@@ -94,48 +96,62 @@ def run_and_save_RandRandState():
     stabAn.save_random_samples('./test_runs/', 'test_0.pickle')
 
 def run_and_save_RandRandDeltaState():
-    L = 6
-    h = [[0, 0, 0]]
-    J_onsite = np.zeros((3, 3))
-    J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-    J_nnn = np.zeros((3, 3))
-    temp = 0
-    
-    ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp)
-    delta = 1
+    L = 8
+
+    ham_type = "RandOld"
+
+    if ham_type == "NN":
+        h = [[0, 0, 0]]
+        J_onsite = np.zeros((3, 3))
+        J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        J_nnn = np.zeros((3, 3))
+        temp = 1
+        
+        ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp)
+    elif ham_type == "Rand":
+        h_max_value = 1
+        J_max_value = 1
+        temp = 0.1
+
+        ham = GeneralHamiltonianRandomUniform(L, h_max_value, J_max_value, temp)
+    elif ham_type == "RandOld":
+        temp = 0.1
+
+        ham = RandomHamiltonianTI(L, temp)
+
+        
+
+
+    delta = 3
     no_of_processes = 4
 
-    distribution_type = {"shape": "uniformSquare", "rhoMethod": "squareRandom",
-                         "scaleWithSize": True}
+    distribution_type = {"shape": "normal", "rhoMethod": "squareRandom", 
+                         "rhoParams": {'min_ev': 0.0}, 'scaleWithSize': True}
 
     randomizer = RandomizerStateRandomDelta(ham, delta, no_of_processes,
                                             distribution_type)
-    stabAn = StabilityAnalysisSparse(ham, randomizer, corr)
+    stabAn = StabilityAnalysisSparse(ham, randomizer, corr, save_Sqints=True)
     stabAn.run(50)
     print("Run time for RandRandDeltaState: " + str(stabAn.time[0]))
     stabAn.save_random_samples('./test_runs/', 'test_1.pickle')
 
 def load_RandRandDeltaState():
-    L = 6
-    h = [[0, 0, 0]]
-    J_onsite = np.zeros((3, 3))
-    J_nn = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-    J_nnn = np.zeros((3, 3))
-    temp = 0
     
-    ham = NNHamiltonian(L, h, J_onsite, J_nn, J_nnn, temp)
-    delta = 1
-    no_of_processes = 4
-
-    distribution_type = {"shape": "uniformSquare", "rhoMethod": "squareRandom"}
-
-    randomizer = RandomizerStateRandomDelta(ham, delta, no_of_processes,
-                                            distribution_type)
-    stabAn = StabilityAnalysisSparse(ham, randomizer, corr)
+    stabAn = StabilityAnalysisSparse()
 
     data = stabAn.load_random_samples("./test_runs/", 'test_1.pickle')
-    print(data['Sq_int'])
+    print(np.array(data['Sqints']).shape)
+    print(np.array(data['Sq_int_in']).shape)
 
+    dist_S_vals2=np.zeros(len(data['Sqints']))
+    mat_tar2=data['Sq_int_in']
+    for i in range(len(data['Sqints'])):
+        mat_rnd2=data['Sqints'][i]
+        dist_S_vals2[i]=dist_S(mat_tar2, mat_rnd2)
+
+    plt.figure(1)
+    plt.scatter(data['dist'], dist_S_vals2)
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -216,13 +232,3 @@ if __name__ == "__main__":
     if case == 4:
 
         load_RandRandDeltaState()
-
-
-
-
-
-
-        
-
-        
-

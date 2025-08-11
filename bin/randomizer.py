@@ -177,7 +177,7 @@ class Randomizer:
     generate data for stability analysis."""
 
     def __init__(self):
-        pass
+        self.rand_ham = None
 
     def return_random_state(self):
         """ This function should generate a random sample and then return the 
@@ -221,7 +221,7 @@ class RandomizerHamiltonianNN(Randomizer):
 			no_of_processes: int
 				number of threads to run in parallel
 		"""
-        self.ham = ham#
+        self.ham = ham
         print("Using RandomizerHamiltonianNN")
         if not isinstance(delta, list):
             raise ValueError("If change in Hamiltonian, delta has to be a list" \
