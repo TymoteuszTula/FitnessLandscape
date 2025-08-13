@@ -1,4 +1,4 @@
-# CorrelationConnection
+# Fitness Landscape
 
 ## Setting up your environment
 
