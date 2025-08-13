@@ -14,6 +14,7 @@ from scipy import rand
 from tools import create_hamiltonian_sparse
 from tools import create_sx_sparse, create_sy_sparse, create_sz_sparse
 from tools import SijCalculator
+from tools import dist_S
 from multiprocessing import Pool
 import numpy as np
 import scipy.sparse as sprs
@@ -42,7 +43,7 @@ class StabilityAnalysisSparse:
     template_params = {
         #'geometry': 'ring' # valid choices for geometry: ring or line - 
         # comment one out as desired
-        'geometry': 'line'
+        'geometry': 'ring'
     }
 
     def __init__(self, ham=None, randomizer=None, 
@@ -434,3 +435,15 @@ class StabilityAnalysisSparse:
                     "Sq_int": Sq_int,
                     "Sq_int_in": Sq_int_in}
         return data_run
+    
+    def return_normalized_diffSqint(self):
+        r"""Return list of normalised differences between target and random
+        integrated Scattering functions.
+        """
+        dist_S_vals = np.zeros(len(self.Sqints))
+        mat_tar = self.Sq_int_in
+        for i in range(len(self.Sqints)):
+            mat_rnd = self.Sqints[i]
+            dist_S_vals[i] = dist_S(mat_tar, mat_rnd)
+
+        return dist_S_vals    
