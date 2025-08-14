@@ -265,7 +265,7 @@ class RandomizerState(Randomizer):
                            (state_in - state_rand)).trace())[0,0]
             energy = (H_in @ state_rand).trace()
 
-        return {"Sij": 1/L/9 * sqrt(S_total), "Sq": 1/L/9 * sqrt(Sq_total), 
+        return {"Sij": 1/L/3 * sqrt(S_total), "Sq": 1/L/3 * sqrt(Sq_total), 
                 "dist": dist, "energy": energy, "Sq_list": Sq_rand}
 
 class RandomizerStateRandomDelta(RandomizerState):
@@ -385,7 +385,7 @@ class RandomizerStateRandomDelta(RandomizerState):
                       state_rand[np.newaxis].T)[0,0] - en_in
         else:
             energy = 0.0
-        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
+        return {"Sij": 1/(3*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
                 "dist": dist, "energy": energy, "Sq_list": Sq_rand,
                 "Sij_list": Sij_rand, "Sq_int": Sq_int_total, 
                 "Sq_int_list": Sq_int_rand}
@@ -449,7 +449,7 @@ class RandomizerStateRandomDelta(RandomizerState):
         else:
             energy = 0.0
 
-        return {"Sij": 1/(9*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
+        return {"Sij": 1/(3*self.ham.L) * sqrt(S_total), "Sq": sqrt(Sq_total), 
                 "dist": dist, "energy": energy, "Sq_list": Sq_rand, 
                 "Sij_list": Sij_rand, "Sq_int": Sq_int_total, 
                 "Sq_int_list": Sq_int_rand}

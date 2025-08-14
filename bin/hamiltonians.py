@@ -61,6 +61,13 @@ class NNHamiltonian(Hamiltonian):
         J = [[[] for i in range(L)] for j in range(L)]
         J_zero = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
+        # Include factor 1/2 for the fact that pairwise interactions will be
+        # counted twice in the Hamiltonian (except for the onsite terms, 
+        # or the special case of dimer):
+        if not (L == 2 and bc == "infinite"):
+            J_nn = [[0.5 * J_nn[i][j] for i in range(3)] for j in range(3)]
+            J_nnn = [[0.5 * J_nnn[i][j] for i in range(3)] for j in range(3)]
+
         for i in range(L):
             for j in range(L):
                 if i == j:
